@@ -1,0 +1,49 @@
+# dockeR
+
+The aim of this package is to facilitate Web Scraping with Selenium. The package proposes the following tools: 
++ Creating a new container with Selenium Installed
++ Some basic tools allowing to get informations on docker containers (name, time, type, http ports, viewing ports)
++ Some basic Selenium function aimed at making webscraping easy
+
+# Getting Docker installed
+
+# Running a first container
+
+```{r}
+library(dplyr)
+library(stringr)
+library(purrr)
+library(glue)
+
+devtools::load_all()
+devtools::document()
+
+
+```
+
+
+```{r}
+
+name <- "selenium_chrome"
+list_container()
+
+
+
+tmp <- existing_containers()[1]
+stop_container(tmp, remove = T)
+
+existing_containers() %>%
+  map(stop_container, remove = T)
+
+stop_container("test1")
+remove_container("test1")
+create_container(image_src = "selenium/standalone-chrome-debug",
+                 container_name = "test1")
+
+
+docker exec -it test bash
+
+is_running("test")
+start_container("test")
+```
+
