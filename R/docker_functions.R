@@ -267,8 +267,9 @@ get_port <- function(container_name, filter_port = NULL){
 view_container <- function(container_name ,
                            viewer = "vnc"){
 
-  if(viewer == "vnc")
+  if(viewer == "vnc"){
     port <- get_port(container_name, 5900)
     system(glue("sudo open vnc://root:secret@localhost:{ port }"))
+  }
 
 }
