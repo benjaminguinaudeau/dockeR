@@ -55,7 +55,7 @@ click <- function(browser, value, using = "css selector"){
 
 #' @export
 new_window <- function(port = 4444, prune = T, browser = "chrome"){
-  tmp <- remoteDriver(remoteServerAddr = "selenium", port = as.integer(4444), browserName = "browser")
+  tmp <- remoteDriver(remoteServerAddr = "selenium", port = as.integer(port), browserName = browser)
   if(prune) tmp$closeall()
   tmp$open()
   return(tmp)
