@@ -43,33 +43,3 @@ send_keys <- function(browser, ...){
 
 
 
-selenium <- remoteDriver(remoteServerAddr = "selenium", port = 4444L, browserName = "chrome")
-selenium$open()
-
-selenium %>% go("https://www.google.ca")
-
-selenium %>% screenshot()
-selenium %>% screenshot("test.png")
-
-selenium %>%
-  element("q", "name") %>%
-  send_keys(list("Paris"))
-
-
-elem <- selenium %>%
-  element("input:nth-child(1)")
-
-elem$click()
-
-selenium %>%
-  click("btnK", "name")
-
-click <- function(browser, value, using = "css selector"){
-  elem <- browser$findElement(using, value)
-
-  elem$clickElement
-
-  Sys.sleep(sample(1:500, 1)/1000)
-}
-
-
