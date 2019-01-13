@@ -32,13 +32,34 @@ element <- function(browser,  value, using = "css selector"){
 }
 
 #' @export
+elements <- function(browser,  value, using = "css selector"){
+  browser$findElements(using, value)
+}
+
+#' @export
 send_keys <- function(browser, ...){
   browser$sendKeysToElement(...)
   #return(browser)
 }
 
+#' @export
+click <- function(browser, value, using = "css selector"){
+  if("remoteDriver" %in% class(browser)){
+    elem <- browser$findElement(using, value)
+    elem$clickElement()
+  } else {
+    browser$clickElement()
+  }
+  Sys.sleep(sample(1:500, 1)/1000)
+}
 
-
+#' @export
+new_window <- function(port = 4444, prune = T, browser = "chrome"){
+  tmp <- remoteDriver(remoteServerAddr = "selenium", port = as.integer(4444), browserName = "browser")
+  if(prune) tmp$closeall()
+  tmp$open()
+  return(tmp)
+}
 
 
 
