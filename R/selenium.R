@@ -1,14 +1,3 @@
-#' click
-#' @export
-
-click <- function(x, y = "css selector"){
-  remDr %>%
-    findElement(y, x) %>%
-    elementClick()
-
-  Sys.sleep(sample(1:500, 1)/1000)
-}
-
 #' screenshot
 #' @export
 
@@ -17,8 +6,9 @@ screenshot <- function(browser, display = T, useViewer = T, file = NULL){
 }
 
 #' @export
-go <- function(brow, ...){
-  brow$navigate(...)
+go <- function(browser, ...){
+  browser$navigate(...)
+  return(browser)
 }
 
 #' @export
@@ -39,14 +29,16 @@ elements <- function(browser,  value, using = "css selector"){
 #' @export
 send_keys <- function(browser, ...){
   browser$sendKeysToElement(...)
-  #return(browser)
+  return(browser)
 }
 
 #' @export
-click <- function(browser, value, using = "css selector"){
+click <- function(browser, value, using = "css selector", return = NULL){
   if("remoteDriver" %in% class(browser)){
     elem <- browser$findElement(using, value)
     elem$clickElement()
+    if(return == "element") return(elem)
+    if(return == "browser") return(browser)
   } else {
     browser$clickElement()
   }
