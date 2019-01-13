@@ -138,7 +138,7 @@ create_container <- function(image_src = NULL,
   }
 
   name <- ifelse(is.null(container_name), "", glue("--name { container_name }"))
-  expose_port <- ifelse(is.null(expose_port), "", glue("--expose { expose_port }"))
+  expose_port <- ifelse(is.null(expose_port), "", glue_collapse(glue("--expose { expose_port }"), " "))
   port <- ifelse(is.null(port), "P", glue(" -p { port }"))
 
   system(glue("docker run -dt{ port} {expose_port} { name } {image_src}"), ignore.stdout = T)
@@ -147,6 +147,7 @@ create_container <- function(image_src = NULL,
     message(glue("{ container_name } was successfully started"))
   }
 }
+
 
 
 #' start_container
@@ -225,6 +226,10 @@ remove_container <- function(container_name){
 }
 
 #' get_port
+#' @description This function return the port exposed on a specific container and their allocated port on the main computer.
+#' @param container_name The name of the container
+#' @param filter_port If one value, it returs the corresponding port on the main computer. If several values, the function returns a tibble matching ports of the main computer with ports from the container.
+#' @return A tibble or a single value depending on filter_port
 #' @export
 
 get_port <- function(container_name, filter_port = NULL){
@@ -262,6 +267,9 @@ get_port <- function(container_name, filter_port = NULL){
 }
 
 #' view_container
+#' @description This function allows to visualize what is happening inside a container. Note that the container must expose the port 5900
+#' @param container_name The name of a container to visualize
+#' @param viewer the device to use to visualize the container. So far only vncviewer is supported.
 #' @export
 
 view_container <- function(container_name ,
