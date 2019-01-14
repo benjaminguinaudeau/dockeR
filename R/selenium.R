@@ -53,6 +53,18 @@ new_window <- function(port = 4444, prune = T, browser = "chrome"){
   return(tmp)
 }
 
+#' @export
+get_real_source_code <- function(browser, filepath = NULL){
+
+  tmp <- browser$executeScript("return window.document.getElementsByTagName('html')[0].innerHTML")
+
+  tmp[[1]] %>%
+    xml2::read_html() %>%
+    xml2::write_html(nnn, file = filepath)
+
+  message(glue("Source code was saved under { filepath }"))
+}
+
 
 
 

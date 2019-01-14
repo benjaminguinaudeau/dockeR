@@ -6,6 +6,11 @@
 \usage{
 view_container(container_name, viewer = "vnc")
 }
+\arguments{
+\item{container_name}{The name of a container to visualize}
+
+\item{viewer}{the device to use to visualize the container. So far only vncviewer is supported.}
+}
 \description{
-view_container
+This function allows to visualize what is happening inside a container. Note that the container must expose the port 5900
 }
