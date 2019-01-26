@@ -88,7 +88,7 @@ is_running <- function(name = NULL,
                        return_logical = F){
 
   if(!is.null(name)){
-    trig <- container_list(not_running = F) %>%
+    trig <- list_container(not_running = F) %>%
       filter(names == name) %>%
       nrow
 
@@ -101,7 +101,7 @@ is_running <- function(name = NULL,
     }
   } else {
     if(!is.null(image_src)){
-      trig <- container_list(not_running = F) %>%
+      trig <- list_container(not_running = F) %>%
         filter(str_detect(image, image_src)) %>%
         nrow
 
@@ -236,7 +236,7 @@ remove_container <- function(container_name){
 
 get_port <- function(container_name, filter_port = NULL){
 
-  ports <- container_list() %>%
+  ports <- list_container() %>%
       filter(names == container_name) %>%
       pull(ports) %>%
       str_split(", ") %>%
