@@ -234,22 +234,24 @@ remove_container <- function(container_name){
 #' @return A tibble or a single value depending on filter_port
 #' @export
 
+
 get_port <- function(container_name, filter_port = NULL){
 
   ports <- list_container() %>%
-      filter(names == container_name) %>%
-      pull(ports) %>%
-      str_split(", ") %>%
-      unlist %>%
-      map(~{
-        .x %>%
-          str_extract("\\d+->\\d+") %>%
-          str_split("->") %>%
-          unlist %>%
-          as.integer %>%
-          set_names("origin", "target")
-      }) %>%
-      reduce(bind_rows)
+    filter(names == container_name) %>%
+    pull(ports) %>%
+    str_split(", ") %>%
+    unlist %>%
+    map(~{
+      .x %>%
+        str_extract("\\d+->\\d+") %>%
+        str_split("->") %>%
+        unlist %>%
+        as.integer %>%
+        set_names("origin", "target") %>%
+        bind_rows
+    }) %>%
+    reduce(bind_rows)
 
   if(is.null(filter_port)){
     return(ports)
@@ -258,9 +260,9 @@ get_port <- function(container_name, filter_port = NULL){
   if(length(filter_port) == 1){
     return(
       ports %>%
-             filter(target == filter_port) %>%
-             pull(origin)
-      )
+        filter(target == filter_port) %>%
+        pull(origin)
+    )
   }
 
   if(length(filter_port) > 1){
