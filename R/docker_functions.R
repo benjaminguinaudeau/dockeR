@@ -141,7 +141,7 @@ create_container <- function(image_src = NULL,
   name <- ifelse(is.null(container_name), "", glue("--name { container_name }"))
   expose_port <- ifelse(is.null(expose_port), "", glue_collapse(glue("--expose { expose_port }"), " "))
   port <- ifelse(is.null(port), "P", glue(" -p { port }"))
-  arg <- ifelse(is.null(other_arguments, "", other_arguments))
+  arg <- ifelse(is.null(other_arguments), "", other_arguments)
 
   system(glue("docker run -dt{ port} { arg } {expose_port} { name } {image_src}"), ignore.stdout = T)
 
