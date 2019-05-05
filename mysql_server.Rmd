@@ -1,0 +1,158 @@
+---
+title: "mysql_server"
+author: "Benjamin"
+date: '2019-01-26'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Prerequisites
+
+## Docker
+## sqlcmd
+
+```{bash}
+
+# Install sqlcmd on mac os
+/usr/bin/ruby -e “$(curl - fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)”
+brew tap microsoft/mssql-release https://github.com/Microsoft/homebrew-mssql-release
+brew update
+brew install --no-sandbox msodbcsql mssql-tools
+
+```
+
+
+# Create Container
+
+## Bash
+
+```{bash}
+sudo docker run -it \
+-e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=Librarian2019' \
+-p 1433:1433 \
+--name sql1 \
+mcr.microsoft.com/mssql/server:2017-latest
+
+sudo docker run -it \
+-e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=Librarian2019' \
+-P \
+--name sql1 \
+mcr.microsoft.com/mssql/server:2017-latest
+
+
+# Change Password
+sudo docker exec -it sql1 /opt/mssql-tools/bin/sqlcmd \
+-S localhost -U SA -P 'Konstanz2018' \
+-Q 'ALTER LOGIN SA WITH PASSWORD="<YourNewStrong!Passw0rd>"'
+
+```
+
+## Run with Docker
+```{r}
+devtools::install_github("benjaminguinaudeau/dockeR")
+pacman::p_load(tidyverse, glue, dockeR)
+
+#stop_container("sql_server", remove = T)
+
+create_container(
+  image_src = "mcr.microsoft.com/mssql/server:2017-latest",
+  other_arguments = "-e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=Konstanz2018'",
+  container_name = "sql_server"
+)
+```
+
+
+# Connect to Database
+
+## Connect locally from the container
+
+```{bash}
+# Enter container
+docker exec -it sql1 bin/bash
+
+# Run Locally
+/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'Konstanz2018'
+```
+
+
+## Connect from Command Line
+```{bash}
+# Run it in Shell
+sqlcmd -S localhost,1433 -U SA -P 'Konstanz2018'
+sqlcmd -S 192.52.32.68,1433 -U SA -P 'Konstanz2018'
+```
+
+## Connect distant from R
+
+```{r}
+pacman::p_load(dockeR, tidyverse, glue, RSQLite, dbplyr)
+
+#port <- get_port("sql_server", 1433)
+#system("netstat -a")
+
+
+port <- 3306L
+ip_adresse <- "217.236.115.112"
+
+#install.packages("RMySQL")
+
+con <- RMySQL::dbConnect(
+  RMySQL::MySQL(), 
+  host = ip_adresse,#ip_adresse,
+  #port = port,
+  dbname = "librarian",
+  user ="librarian",
+  password = "Librarian2019"
+  )
+
+con <- dbConnect(odbc(),
+                 Driver = "ODBC Driver 17 for SQL Server",
+                 Server = paste(ip_adresse, "1433", sep =","),
+                 #Database = "Test",
+                 UID ="SA",
+                 PWD = "Librarian2019")
+
+con %>% 
+  RSQLite::dbWriteTable("empty_cars",  mtcars)  
+
+con %>%
+  RMySQL::dbListTables()
+
+con %>%
+  RMySQL::dbWriteTable("empty_cars",  mtcars)
+
+data()
+con %>%
+  RMySQL::dbWriteTable("air",  airquality)
+  
+
+
+
+con %>%
+  tbl("empty_cars") %>%
+  #as_tibble %>%
+  #drop_na
+  filter(mpg > 20)
+  
+  filter(str_detect(row_names, "Mazda"))
+
+con %>%
+  tbl("iris") %>%
+  filter(species %>% str_detect("virgin"))
+
+```
+
+
+
+
+
+
+
+
+
+
+
+

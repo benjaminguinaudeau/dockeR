@@ -1,0 +1,97 @@
+---
+title: "Docker und Selenium auf einem Server Installieren"
+author: "Benjamin"
+date: '2019-01-13'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Docker must be installed
+
+## Linux
+
+```{r}
+# Install docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/1.23.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+
+```
+
+
+# Docker run
+
+```{bash}
+
+
+
+mkdir ~/my_compose
+cd ~/my_compose
+
+nano docker-compose.yml
+```
+
+```{bash}
+
+version: '3'
+services:
+  rstudio:
+    image: guiguiplot/rstudio_perso
+    container_name: rstudio
+    ports:
+      - "8787:8787"
+    volumes:
+     - "/stock:/mydata"
+    links:
+      - selenium:selenium
+  selenium:
+    container_name: chrome
+    image: selenium/standalone-chrome-debug
+    ports:
+      - "32002:4444"
+      - "32001:5900"
+
+```
+
+```{bash}
+docker-compose up -d
+```
+
+
+[Extension for googlechrom](https://chrome.google.com/webstore/detail/vnc®-viewer-for-google-ch/iabmpiboiopbgfabjmgeedhcmjenhbla)
+ 
+Connect to port 32001 ; check whether the port is open if problem on a server.
+
+Connect to the server on port 8787.
+
+```{bash}
+docker exec -it rstudio /bin/bash
+sudo adduser USER 
+# Type Password and enter enter enter
+sudo adduser USER sudo
+sudo chmod o+w  /usr/local/lib/R/site-library
+
+exit
+```
+
+
+```{r}
+devtools::install_github("benjaminguinaudeau/dockeR")
+pacman::p_load(tidyverse, RSelenium, dockeR)
+
+selenium <- remoteDriver(remoteServerAddr = "selenium", port = 4444L, browserName = "chrome")
+selenium$open()
+
+selenium %>% go("https://www.google.ca")
+
+selenium %>% screenshot()
+selenium %>% screenshot("test.png")
+
+selenium %>%
+  element("q", "name") %>%
+  send_keys(list("Paris"))
+```
+

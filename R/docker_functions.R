@@ -8,9 +8,9 @@
 list_container <- function(image_src = NULL, not_running = T){
 
   if(not_running){
-    raw_list <- system("docker ps -a --no-trunc", intern = T)
+    raw_list <- bashR::sudo("docker ps -a --no-trunc", intern = T)
   } else {
-    raw_list <- system("docker ps --no-trunc", intern = T)
+    raw_list <- bashR::sudo("docker ps --no-trunc", intern = T)
   }
 
   col_names <- raw_list[1] %>% str_split("\\s{2,}") %>% unlist
@@ -33,10 +33,10 @@ list_container <- function(image_src = NULL, not_running = T){
 
   containers <- structured_list %>%
     map(~{
-      if(str_detect(.x[5], "Exited")){
-        .x[7] <- .x[6]
-        .x[6] <- NA
-      }
+      # if(str_detect(.x[5], "Exited")){
+      #   .x[7] <- .x[6]
+      #   .x[6] <- NA
+      # }
       .x
     }) %>%
     reduce(cbind) %>%
@@ -143,7 +143,7 @@ create_container <- function(image_src = NULL,
   port <- ifelse(is.null(port), "P", glue(" -p { port }"))
   arg <- ifelse(is.null(other_arguments), "", other_arguments)
 
-  system(glue("docker run -dt{ port} { arg } {expose_port} { name } {image_src}"), ignore.stdout = T)
+  bashR::sudo(glue("docker run -dt{ port} { arg } {expose_port} { name } {image_src}"), ignore.stdout = T)
 
   if(container_name %in% running_containers()){
     message(glue("{ container_name } was successfully started"))
@@ -168,7 +168,7 @@ start_container <- function(container_name){
     }
 
     if(container_name %in% stopped_containers()){
-      system(glue("docker start { container_name }"), ignore.stdout = T)
+      bashR::sudo(glue("docker start { container_name }"), ignore.stdout = T)
     }
     if(is_running(name = container_name, return_logical = T)){
       message(glue("{ container_name } was successfully started"))
@@ -191,14 +191,14 @@ stop_container <- function(container_name, remove = F){
   }
 
   if(container_name %in% running_containers()){
-    system(glue("docker stop { container_name }"), ignore.stdout = T)
+    bashR::sudo(glue("docker stop { container_name }"), ignore.stdout = T)
 
     if(container_name %in% stopped_containers()){
       message(glue("{ container_name } was successfully stopped"))
     }
   }
 
-  if(remove) system(glue("docker rm { container_name }"), ignore.stdout = T)
+  if(remove) bashR::sudo(glue("docker rm { container_name }"), ignore.stdout = T)
   if(!container_name %in% existing_containers()){
     message(glue("{ container_name } was succesfully removed"))
   }
@@ -219,7 +219,7 @@ remove_container <- function(container_name){
   }
 
   if(container_name %in% stopped_containers()){
-    system(glue("docker rm { container_name }"), ignore.stdout = T)
+    bashR::sudo(glue("docker rm { container_name }"), ignore.stdout = T)
 
     if(!container_name %in% existing_containers()){
       message(glue("{ container_name } was successfully removed"))
@@ -281,7 +281,7 @@ view_container <- function(container_name ,
 
   if(viewer == "vnc"){
     port <- get_port(container_name, 5900)
-    system(glue("sudo open vnc://root:secret@localhost:{ port }"))
+    bashR::sudo(glue("sudo open vnc://root:secret@localhost:{ port }"))
   }
 
 }

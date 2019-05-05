@@ -1,0 +1,83 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+devtools::load_all()
+
+pacman::p_load(tidyverse)
+```
+
+```{r}
+
+create_container(image_src = "rocker/shiny", #Image to be used (model for the container)
+                 container_name = "shiny_server_2",
+                 other_arguments = "-v /docker:/srv/shiny-server/apps")
+
+container <- list_container() %>%
+  filter(names == "shiny_server_2")
+
+container_port <- get_port("shiny_server_2", 3838)
+bashR::sudo(glue::glue("ufw allow { container_port }"))
+
+browseURL(glue::glue("http://localhost:{ container_port }"))
+bashR::sudo("docker exec -t shiny_server_2 sh -c 'sudo -i chmod -R 777 /srv/shiny-server/apps/'")
+bashR::sudo("docker exec -t shiny_server_2 sh -c 'sudo -i chmod -R 777 /usr/local/lib/R/site-library'")
+  
+shiny_log <- function(n_lines = 10){
+  tmp <- bashR::sudo(
+    "docker exec -t shiny_server_2 sh -c 'cd /var/log/shiny-server && ls | tail -f -n 1 | xargs cat'",
+    intern = T, ignore.stderr = F, ignore.stdout = F
+    )
+  
+  cat(paste(tail(tmp, n_lines), collapse("\n")))
+}
+
+shiny_log(20)
+
+bashR::sudo("docker exec -t shiny_server_2 R CMD BATCH /srv/shiny-server/apps/conf.R", intern = T, ignore.stdout = F, ignore.stderr = F)
+
+
+To do for container
+  + change ownership of R library
+  + change ownership of mounted file
+  + install all packages before and add Libpath
+
+
+```
+
+```{r}
+
+container_name <- "shiny_container"
+
+create_container(image_src = "guiguiplot/shiny_server_base",
+                 container_name = container_name,
+                 other_arguments = "-v /docker:/srv/shiny-server/apps")
+
+container <- list_container() %>%
+  filter(names == container_name)
+
+container_port <- get_port(container_name, 3838)
+bashR::sudo(glue::glue("ufw allow { container_port }"))
+
+browseURL(glue::glue("http://localhost:{ container_port }"))
+
+bashR::sudo(glue::glue("docker exec -t { container_name } sh -c 'sudo -i chmod -R 777 /srv/shiny-server/apps/'"))
+bashR::sudo(glue::glue("docker exec -t { container_name } sh -c 'sudo -i chmod 777 /usr/local/lib/R/site-library'"))
+  
+shiny_log <- function(n_lines = 10){
+  tmp <- bashR::sudo(
+    "docker exec -t shiny_server_2 sh -c 'cd /var/log/shiny-server && ls | tail -f -n 1 | xargs cat'",
+    intern = T, ignore.stderr = F, ignore.stdout = F
+    )
+  
+  cat(paste(tail(tmp, n_lines), collapse("\n")))
+}
+
+shiny_log(20)            
+            
+            
+```
+
