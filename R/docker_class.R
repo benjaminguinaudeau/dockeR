@@ -22,7 +22,7 @@ docker <- R6::R6Class(
       get_port(container_name = self$container_name, filter_port = filter_port)
     },
     exec = function(command, sudo = F, ...){
-      bashR::sudo(
+      bashR::exec(
         glue::glue(
           'docker exec -t --privileged { self$container_name } /bin/bash -c "{ command }"'
         ), ...

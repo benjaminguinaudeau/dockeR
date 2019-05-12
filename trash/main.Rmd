@@ -17,6 +17,26 @@ devtools::install_github("benjaminguinaudeau/bashR")
 
 pacman::p_load(keyring, tidyverse)
 
+packages <- install_packages(pacman, devtools, ranger)
+
+
+  
+}
+
+
+install_packages(pacman, devtools) %>% map(pacman::p_loa)
+
+list_container()
+
+
+
+shiny_server$exec(
+  glue::glue("Rscript -e \'.libPaths(c(\'/usr/local/lib/R/site-library\'\'")
+  )
+
+shiny_server$exec(
+  glue::glue("Rscript -e \'.libPaths(\\\"/srv/\\\") ; .libPaths()\'")
+  )
 ```
 
 
@@ -29,10 +49,15 @@ app_path <- "~/Downloads/shiny_prod 2/"
 
 #prune_containers()
 
-shiny_server <- docker_shiny_server$new(container_name = "shiny_server_1", 
+shiny_server <- docker_shiny_server$new(container_name = "shiny_server_3", 
                              app_dir = "/docker")
 
-getwd()
+shiny_server$install_packages(dplyr)
+
+# Don't forget to add in your app.file
+# .libPaths(c("/usr/local/lib/R/site-library","/usr/local/lib/R/library"))
+
+
 shiny_server$status
 shiny_server$stop()
 shiny_server$start()

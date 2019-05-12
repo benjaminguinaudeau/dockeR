@@ -21,6 +21,19 @@ docker_shiny_server <- R6::R6Class(
 
       port <- self$port(filter_port = 3838)
       browseURL(glue::glue("http://localhost:{ port }/apps{ app }"))
+    },
+    install_packages = function(...){
+      packages <- as.character(match.call(expand.dots = FALSE)[[2]]) %>%
+        glue::glue_collapse('\\\", \\\"')
+
+      self$exec(
+        paste0(
+          "Rscript -e ",
+          "\'.libPaths(c(\\\"/usr/local/lib/R/site-library\\\",\\\"/usr/local/lib/R/library\\\"));",
+          "library(pacman) ;",
+          glue::glue("purrr::map(c(\\\"{ packages }\\\"), ~p_load(char = .x))\'")
+        )
+      )
     }
   )
 )
