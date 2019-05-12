@@ -5,7 +5,11 @@
 \title{screenshot}
 \usage{
 screenshot(browser, file = NULL, display = T, useViewer = T)
+
+screenshot(browser, file = NULL, display = T, useViewer = T)
 }
 \description{
+screenshot
+
 screenshot
 }
