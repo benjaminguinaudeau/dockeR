@@ -1,0 +1,177 @@
+---
+title: "youtubeR"
+author: "Benjamin"
+date: '2019-01-27'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+sample(0:1, 10, replace = T)
+```
+# R6
+
+```{r}
+devtools::install_github("benjaminguinaudeau/bashR")
+
+pacman::p_load(keyring, tidyverse)
+
+```
+
+
+```{r}
+
+devtools::install_github("benjaminguinaudeau/dockeR")
+library(tidyverse, dockeR)
+
+app_path <- "~/Downloads/shiny_prod 2/"
+
+#prune_containers()
+
+shiny_server <- docker_shiny_server$new(container_name = "shiny_server_1", 
+                             app_dir = "/docker")
+
+getwd()
+shiny_server$status
+shiny_server$stop()
+shiny_server$start()
+shiny_server$port
+fs::dir_copy(app_path, overwrite = T)
+shiny_server$browse()
+
+```
+
+
+
+```{r}
+docker_shiny_server <- R6::R6Class(
+  inherit = dockeR::docker,
+  public = list(
+    app_dir = NULL,
+    initialize = function(container_name, app_dir){
+      self$app_dir <- app_dir
+      self$status <- "Running"  
+      self$container_name <- container_name
+      
+      self <- docker$new(
+        other_arguments = glue::glue("-v { app_dir }:/srv/shiny-server/apps"),
+        container_name = container_name, 
+        image_src = "guiguiplot/shiny_server_base"
+      )
+    }, 
+    browse = function(app = NULL){
+      app <- ifelse(is.null(app), "", glue::glue("/{ app }"))
+      
+      port <- self$port(filter_port = 3838) 
+      browseURL(glue::glue("http://localhost:{ port }/apps{ app }"))
+    }
+  )
+)
+
+
+t$status
+t$container_name
+t$stop()
+t$start()
+t$exec("sudo apt-get update")
+t$browse()
+
+
+running_containers()
+
+docker_shiny_server <- function(container_name, app_dir){
+  out <- docker$new(
+    other_arguments = glue::glue("-v { app_dir }:/srv/shiny-server/apps"),
+    container_name = container_name, 
+    image_src = "guiguiplot/shiny_server_base"
+  )
+  return(out)
+}
+e <- docker_shiny_server("shiny_server_15", "/docker")
+browse_shiny_server <- function(container_name){
+  container <- docker$new(container_name = container_name)
+  port <- container$port(filter_port = 3838) 
+  browseURL(glue::glue("http://localhost:{ port }/apps"))
+}
+browse_shiny_server(e$container_name)
+
+e$port()
+browseURL("http://localhost:32784")
+
+
+e$container_name
+t <- docker_shiny_server$new(container_name = "shiny_server_12")
+a <- docker$new(
+  other_arguments = "-v /docker:/srv/shiny-server/apps",
+  container_name = "shiny_server_4", 
+  image_src = "guiguiplot/shiny_server_base"
+)
+t$stop()
+t$port()
+t$container_name
+t$container_name <- "shiny_server_5"
+a$container_name
+a$status
+list_container()
+t$status
+```
+
+
+
+```{r}
+library(tidyverse)
+list_images <- function(){
+  bashR::sudo("docker images", intern = T) %>%
+    map(str_split, "\\s{2,}") %>%
+    map(unlist) %>%
+    map_dfc(as_tibble) %>%
+    spread(value, value1) %>%
+    janitor::clean_names(.)
+  
+}
+
+list_images()
+
+list_container()
+
+existing_containers() %>%
+  walk(stop_container, remove = T)
+
+"docker pull selenium/standalone-chrome-debug"
+
+t <- docker$new(image_src = "selenium/standalone-chrome-debug",
+                container_name = "test_1")
+a <- docker$new(container_name = existing_containers()[1])
+
+shiny_server <- docker$new(image_src = "guiguiplot/shiny_server_base", 
+                           container_name = "shiny_server", 
+                           other_arguments = "-v /docker:/srv/shiny-server/apps")
+shiny_server$port()
+
+list_container()
+
+t$stop()
+t$start()
+t$port()
+
+t$exec(bashR::current_user(cmd = T), intern = T)
+t$exec("sudo apt-get -y upgrade")
+list_container()
+
+```
+
+
+
+# Install youtube-dl
+
+```{r}
+
+sudo curl -L https://yt-dl.org/downloads/latest/youtube-dl -o /usr/local/bin/youtube-dl
+sudo chmod a+rx /usr/local/bin/youtube-dl
+
+brew install youtube-dl
+
+```
+
+# Selenium Wraper for https://www.reviewstown.com/freeware/online-video-downloader/
