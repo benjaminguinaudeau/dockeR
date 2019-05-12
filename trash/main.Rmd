@@ -49,9 +49,9 @@ app_path <- "~/Downloads/shiny_prod 2/"
 
 #prune_containers()
 
-shiny_server <- docker_shiny_server$new(container_name = "shiny_server_3", 
+simon <- docker_shiny_server$new(container_name = "shiny_server_4", 
                              app_dir = "/docker")
-
+simon$install_packages(shinytoastr)
 shiny_server$install_packages(dplyr)
 
 # Don't forget to add in your app.file

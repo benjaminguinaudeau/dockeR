@@ -60,8 +60,11 @@ The function can take other arguments, which can be important if you run contain
 ```{r}
 prune_containers()
 # First Container
-create_container(image_src = "selenium/standalone-chrome-debug", #Image to be used (model for the container)
-                 container_name = "chrome_1") # Name you want to use
+chrome_1 <- docker$new(
+  image_src = "selenium/standalone-chrome-debug", #Image to be used (model for the container)
+  container_name = "chrome_1" # Name you want to use
+)
+
 ```
 
 We can check if the container was successfully created using the list_container function. This function returns a tibble summarizing the most important informations on the created container. 
@@ -73,22 +76,31 @@ list_container()
 Once a container has been created, it is automatically running. But you can stop it and restart it. As long as you do not remove it, the container will remain.
 
 ```{r}
-stop_container("chrome_1")
-start_container("chrome_1")
-stop_container("chrome_1")
+chrome_1$stop()
+chrome_1$start()
+chrome_1$stop()
+
+# stop_container("chrome_1")
+# start_container("chrome_1")
+# stop_container("chrome_1")
 ```
 
 Now, I create a second and a third container.
 
 ```{r}
-
 # Second Container
-create_container(image_src = "selenium/standalone-firefox", #Image to be used (model for the container)
-                 container_name = "firefox") # Name you want to use
+firefox <- docker$new(
+  image_src = "selenium/standalone-firefox", #Image to be used (model for the container)
+  container_name = "firefox" # Name you want to use
+)
 
 # Third Container
-create_container(image_src = "selenium/standalone-phantomJS", #Image to be used (model for the container)
-                 container_name = "phantomJS") # Name you want to use
+phantomJS <- docker$new(
+  image_src = "nkovacs/selenium-standalone-phantomjs", #Image to be used (model for the container)
+  container_name = "phantomJS" # Name you want to use
+)
+
+list_images()
 
 list_container()
 ```
@@ -107,19 +119,18 @@ Containers can also be removed.
 
 ```{r}
 #Two solutions to remove containers
-stop_container("phantomJS", remove = T)
-remove_container("firefox") # Works only if the container is already stopped
-stop_container("firefox")
-remove_container("firefox")
+phantomJS$stop(remove = T)
+firefox$stop()
+firefox$stop(remove = T)
 
 ```
 
 A very important parameter when dealing with docker regards the ports. Ports are literally the doors of computers and are identified with integer. Per default, all ports are close ; when we create a container we open can either expose specific ports of the container (which means opening it for any connection) or allocate specific port of the computer to specific port of the container. For instance, if I want to connect to a server installed on a container using a common http port (4444), then I need to know which port of the computer is linked to the container port 4444. When we create the container, we use the argument "P", which automatically allocate random port to each possible port of the container. To know the number of this port, we can use the function get_port in three different ways. 
 
 ```{r}
-get_port("chrome_1")
-get_port("chrome_1", 4444L)
-get_port("chrome_1", c(4444L, 5900L))
+chrome_1$port()
+chrome_1$port(filter_port = 4444L)
+chrome_1$port(filter_port = c(4444L, 5900L))
 
 ```
 
@@ -128,6 +139,7 @@ This port are usefull to access a server or initialize a selenium browser.
 Finally, I implemented a brief function, which relies on vncviewer to open a window to visualize what is happening in the selenium browser. So far, I have only implemented one viewer, but I plan on implementing others. 
 
 ```{r}
+
 view_container("chrome_1") #Since we have not yet initialize any browser, we do not see anything, but the raw container/mini-computer.
 # Notice that you can throuch vncviewer interact with the container as you would interact with any computer
 ```
@@ -140,18 +152,8 @@ view_container("chrome_1") #Since we have not yet initialize any browser, we do 
 
 ## Open a tty to interact within 
 ```{r}
-system("docker exec -it test1 bash")
+chrome_1$exec("sudo apt-get update && sudo apt-get upgrade")
+
 ```
 
 ## Addword user and password on rstudio-server
-
-## Trash
-```{r}
-stop_container("chrome_1", remove = T)
-create_container(image_src = "selenium/standalone-chrome-debug", #Image to be used (model for the container)
-                 container_name = "chrome_1", 
-                 expose_port = c(80, 8787L)) # Name you want to use
-get_port("chrome_1")
-
-```
-

@@ -128,6 +128,23 @@ is_running <- function(name = NULL,
   }
 }
 
+#' list_images
+#' @export
+
+list_images <- function(){
+  bashR::sudo("docker images", intern = T) %>%
+    map(str_split, "\\s{2,}") %>%
+    map(unlist) %>%
+    map_dfc(as_tibble) %>%
+    t %>%
+    as.data.frame %>%
+    as_tibble %>%
+    set_names(as.character(t(.[1,]))) %>%
+    tail(-1) %>%
+    janitor::clean_names(.)
+
+}
+
 #' create_container
 #' @description This function allows to create container based on an image
 #' @export

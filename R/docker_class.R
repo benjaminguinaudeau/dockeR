@@ -14,8 +14,8 @@ docker <- R6::R6Class(
       start_container(self$container_name)
       self$status <- "Running"
     },
-    stop = function(){
-      stop_container(self$container_name)
+    stop = function(remove = F){
+      stop_container(self$container_name, remove = remove)
       self$status <- "Stopped"
     },
     port = function(filter_port = NULL){
