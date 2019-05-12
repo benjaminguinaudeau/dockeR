@@ -80,41 +80,6 @@ t$browse()
 
 running_containers()
 
-docker_shiny_server <- function(container_name, app_dir){
-  out <- docker$new(
-    other_arguments = glue::glue("-v { app_dir }:/srv/shiny-server/apps"),
-    container_name = container_name, 
-    image_src = "guiguiplot/shiny_server_base"
-  )
-  return(out)
-}
-e <- docker_shiny_server("shiny_server_15", "/docker")
-browse_shiny_server <- function(container_name){
-  container <- docker$new(container_name = container_name)
-  port <- container$port(filter_port = 3838) 
-  browseURL(glue::glue("http://localhost:{ port }/apps"))
-}
-browse_shiny_server(e$container_name)
-
-e$port()
-browseURL("http://localhost:32784")
-
-
-e$container_name
-t <- docker_shiny_server$new(container_name = "shiny_server_12")
-a <- docker$new(
-  other_arguments = "-v /docker:/srv/shiny-server/apps",
-  container_name = "shiny_server_4", 
-  image_src = "guiguiplot/shiny_server_base"
-)
-t$stop()
-t$port()
-t$container_name
-t$container_name <- "shiny_server_5"
-a$container_name
-a$status
-list_container()
-t$status
 ```
 
 
@@ -165,7 +130,7 @@ list_container()
 
 # Install youtube-dl
 
-```{r}
+```{bash}
 
 sudo curl -L https://yt-dl.org/downloads/latest/youtube-dl -o /usr/local/bin/youtube-dl
 sudo chmod a+rx /usr/local/bin/youtube-dl

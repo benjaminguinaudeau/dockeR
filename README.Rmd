@@ -17,6 +17,7 @@ library(dplyr)
 library(stringr)
 library(purrr)
 library(glue)
+devtools::load_all()
 
 ```
 
@@ -57,6 +58,7 @@ The two arguments are the most important ones for Selenium :
 The function can take other arguments, which can be important if you run containers based on other images. 
 
 ```{r}
+prune_containers()
 # First Container
 create_container(image_src = "selenium/standalone-chrome-debug", #Image to be used (model for the container)
                  container_name = "chrome_1") # Name you want to use
@@ -105,7 +107,7 @@ Containers can also be removed.
 
 ```{r}
 #Two solutions to remove containers
-stop_container("phanomjs", remove = T)
+stop_container("phantomJS", remove = T)
 remove_container("firefox") # Works only if the container is already stopped
 stop_container("firefox")
 remove_container("firefox")
