@@ -3,11 +3,6 @@
 
 prune_containers <- function() walk(existing_containers(), stop_container, remove = T)
 
-#' %>%
-#' @export
-
-`%>%` <- dplyr::`%>%`
-
 #' list_container
 #' @description This function lists all running containers. If image_src is specified, it only return containers, of which the building image matches the given string.
 #' @param image_src A String providing a specific image to filter
