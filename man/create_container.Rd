@@ -5,7 +5,7 @@
 \title{create_container}
 \usage{
 create_container(image_src = NULL, container_name = NULL,
-  expose_port = NULL, port = NULL)
+  other_arguments = NULL, expose_port = NULL, port = NULL)
 }
 \description{
 This function allows to create container based on an image

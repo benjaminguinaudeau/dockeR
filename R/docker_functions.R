@@ -1,3 +1,13 @@
+#' prune_containers
+#' @export
+
+prune_containers <- function() walk(existing_containers(), stop_container, remove = T)
+
+#' %>%
+#' @export
+
+`%>%` <- dplyr::`%>%`
+
 #' list_container
 #' @description This function lists all running containers. If image_src is specified, it only return containers, of which the building image matches the given string.
 #' @param image_src A String providing a specific image to filter
@@ -13,15 +23,15 @@ list_container <- function(image_src = NULL, not_running = T){
     raw_list <- bashR::sudo("docker ps --no-trunc", intern = T)
   }
 
-  col_names <- raw_list[1] %>% str_split("\\s{2,}") %>% unlist
+  col_names <- raw_list[1] %>% stringr::str_split("\\s{2,}") %>% unlist
 
   structured_list <- raw_list %>%
     tail(-1) %>%
-    str_split("\\s{2,}")
+    stringr::str_split("\\s{2,}")
 
   if(length(structured_list) == 0){
     return(
-      tibble("container id" = NA_character_,
+      tibble::tibble("container id" = NA_character_,
              "image" = NA_character_,
              "command" = NA_character_,
              "created" = NA_character_,
@@ -32,24 +42,24 @@ list_container <- function(image_src = NULL, not_running = T){
   }
 
   containers <- structured_list %>%
-    map(~{
-      # if(str_detect(.x[5], "Exited")){
-      #   .x[7] <- .x[6]
-      #   .x[6] <- NA
-      # }
+    purrr::map(~{
+      if(stringr::str_detect(.x[5], "Exited")){
+        .x[7] <- .x[6]
+        .x[6] <- NA
+      }
       .x
     }) %>%
-    reduce(cbind) %>%
+    purrr::reduce(cbind) %>%
     t %>%
-    as_tibble
+    tibble::as_tibble(.)
   names(containers) <- col_names %>% tolower
 
   if(!is.null(image_src)){
     containers <- containers %>%
-      filter(image %>% str_detect(image_src))
+      filter(image %>% stringr::str_detect(image_src))
 
     if(nrow(containers) == 0){
-      message(glue("No container build from image \"{ image_src }\" has been found"))
+      message(glue::glue("No container build from image \"{ image_src }\" has been found"))
     }
   }
 
@@ -59,12 +69,12 @@ list_container <- function(image_src = NULL, not_running = T){
 #' existing_containers
 #' @export
 
-existing_containers <- function() list_container() %>% pull(names)
+existing_containers <- function() list_container() %>% dplyr::pull(names) #%>% c(., "")
 
 #' running_containers
 #' @export
 
-running_containers <- function() list_container(not_running = F) %>% pull(names)
+running_containers <- function() list_container(not_running = F) %>% dplyr::pull(names) #%>% c(., "")
 
 #' stopped_containers
 #' @export
@@ -89,32 +99,32 @@ is_running <- function(name = NULL,
 
   if(!is.null(name)){
     trig <- list_container(not_running = F) %>%
-      filter(names == name) %>%
+      dplyr::filter(names == name) %>%
       nrow
 
     if(trig != 0){
-      if(!quiet) message(glue("Container { name } is running"))
+      if(!quiet) message(glue::glue("Container { name } is running"))
       if(return_logical) return(T)
     } else {
-      if(!quiet) message(glue("Container { name } is not running"))
+      if(!quiet) message(glue::glue("Container { name } is not running"))
       if(return_logical) return(F)
     }
   } else {
     if(!is.null(image_src)){
       trig <- list_container(not_running = F) %>%
-        filter(str_detect(image, image_src)) %>%
+        dplyr::filter(stringr::str_detect(image, image_src)) %>%
         nrow
 
       if(trig == 1){
-        if(!quiet) message(glue("{ trig } container built on { image_src } is running"))
+        if(!quiet) message(glue::glue("{ trig } container built on { image_src } is running"))
         if(return_logical) return(T)
       } else {
         if(trig > 1 ){
-          if(!quiet) message(glue("{ trig } container built on { image_src } are running"))
+          if(!quiet) message(glue::glue("{ trig } container built on { image_src } are running"))
           if(return_logical) return(T)
         } else {
           if(trig == 0){
-            if(!quiet) message(glue("No container built on { image_src } is running"))
+            if(!quiet) message(glue::glue("No container built on { image_src } is running"))
             if(return_logical) return(F)
           }
         }
@@ -133,20 +143,22 @@ create_container <- function(image_src = NULL,
                              expose_port = NULL,
                              port = NULL){
 
-  if(container_name %in% existing_containers()){
-    stop(glue("A container is already named { container_name }.\n
-              Please choose another name"))
-  }
+  if(!is.null(container_name)){
+    if(container_name %in% existing_containers()){
+      stop(glue("A container is already named { container_name }.\n
+                Please choose another name"))
+    }
+    }
 
-  name <- ifelse(is.null(container_name), "", glue("--name { container_name }"))
-  expose_port <- ifelse(is.null(expose_port), "", glue_collapse(glue("--expose { expose_port }"), " "))
-  port <- ifelse(is.null(port), "P", glue(" -p { port }"))
+  name <- ifelse(is.null(container_name), "", glue::glue("--name { container_name }"))
+  expose_port <- ifelse(is.null(expose_port), "", glue::glue_collapse(glue::glue("--expose { expose_port }"), " "))
+  port <- ifelse(is.null(port), "P", glue::glue(" -p { port }"))
   arg <- ifelse(is.null(other_arguments), "", other_arguments)
 
-  bashR::sudo(glue("docker run -dt{ port} { arg } {expose_port} { name } {image_src}"), ignore.stdout = T)
+  bashR::sudo(glue::glue("docker run -dt{ port} { arg } {expose_port} { name } {image_src}"), ignore.stdout = T)
 
   if(container_name %in% running_containers()){
-    message(glue("{ container_name } was successfully started"))
+    message(glue::glue("{ container_name } was successfully started"))
   }
 }
 
@@ -159,19 +171,19 @@ create_container <- function(image_src = NULL,
 start_container <- function(container_name){
 
   if(container_name %in% running_containers()){
-    message(glue("{ container_name } is already running"))
+    message(glue::glue("{ container_name } is already running"))
   } else {
 
-    if(!container_name %in% existing_containers()){
-      stop(glue("There is no container named { container_name }\n
+    if(!container_name %in% c(existing_containers(), "")){
+      stop(glue::glue("There is no container named { container_name }\n
                Please check whether the container has been properly created."))
     }
 
     if(container_name %in% stopped_containers()){
-      bashR::sudo(glue("docker start { container_name }"), ignore.stdout = T)
+      bashR::sudo(glue::glue("docker start { container_name }"), ignore.stdout = T)
     }
     if(is_running(name = container_name, return_logical = T)){
-      message(glue("{ container_name } was successfully started"))
+      message(glue::glue("{ container_name } was successfully started"))
     }
   }
 }
@@ -183,24 +195,24 @@ start_container <- function(container_name){
 
 stop_container <- function(container_name, remove = F){
   if(!container_name %in% existing_containers()){
-    stop(glue("{ container_name } does not exist"))
+    stop(glue::glue("{ container_name } does not exist"))
   }
 
   if(container_name %in% stopped_containers()){
-    message(glue("{ container_name } is already stopped"))
+    message(glue::glue("{ container_name } is already stopped"))
   }
 
   if(container_name %in% running_containers()){
-    bashR::sudo(glue("docker stop { container_name }"), ignore.stdout = T)
+    bashR::sudo(glue::glue("docker stop { container_name }"), ignore.stdout = T)
 
     if(container_name %in% stopped_containers()){
-      message(glue("{ container_name } was successfully stopped"))
+      message(glue::glue("{ container_name } was successfully stopped"))
     }
   }
 
-  if(remove) bashR::sudo(glue("docker rm { container_name }"), ignore.stdout = T)
+  if(remove) bashR::sudo(glue::glue("docker rm { container_name }"), ignore.stdout = T)
   if(!container_name %in% existing_containers()){
-    message(glue("{ container_name } was succesfully removed"))
+    message(glue::glue("{ container_name } was succesfully removed"))
   }
 }
 
@@ -210,19 +222,19 @@ stop_container <- function(container_name, remove = F){
 
 remove_container <- function(container_name){
   if(!container_name %in% existing_containers()){
-    stop(glue("{ container_name } does not exist"))
+    stop(glue::glue("{ container_name } does not exist"))
   }
 
   if(container_name %in% running_containers()){
-    stop(glue("{ container_name } cannot be removed, because it is running.\n
+    stop(glue::glue("{ container_name } cannot be removed, because it is running.\n
               Stop it first using: stop_container(\'{ container_name }\') "))
   }
 
   if(container_name %in% stopped_containers()){
-    bashR::sudo(glue("docker rm { container_name }"), ignore.stdout = T)
+    bashR::sudo(glue::glue("docker rm { container_name }"), ignore.stdout = T)
 
     if(!container_name %in% existing_containers()){
-      message(glue("{ container_name } was successfully removed"))
+      message(glue::glue("{ container_name } was successfully removed"))
     }
   }
 }
@@ -238,20 +250,20 @@ remove_container <- function(container_name){
 get_port <- function(container_name, filter_port = NULL){
 
   ports <- list_container() %>%
-    filter(names == container_name) %>%
-    pull(ports) %>%
-    str_split(", ") %>%
+    dplyr::filter(names == container_name) %>%
+    dplyr::pull(ports) %>%
+    stringr::str_split(", ") %>%
     unlist %>%
-    map(~{
+    purrr::map(~{
       .x %>%
-        str_extract("\\d+->\\d+") %>%
-        str_split("->") %>%
+        stringr::str_extract("\\d+->\\d+") %>%
+        stringr::str_split("->") %>%
         unlist %>%
         as.integer %>%
-        set_names("origin", "target") %>%
-        bind_rows
+        purrr::set_names("origin", "target") %>%
+        dplyr::bind_rows(.)
     }) %>%
-    reduce(bind_rows)
+    purrr::reduce(bind_rows)
 
   if(is.null(filter_port)){
     return(ports)
@@ -260,13 +272,13 @@ get_port <- function(container_name, filter_port = NULL){
   if(length(filter_port) == 1){
     return(
       ports %>%
-        filter(target == filter_port) %>%
-        pull(origin)
+        dplyr::filter(target == filter_port) %>%
+        dplyr::pull(origin)
     )
   }
 
   if(length(filter_port) > 1){
-    return(ports %>% filter(target %in% filter_port))
+    return(ports %>% dplyr::filter(target %in% filter_port))
   }
 }
 
@@ -281,7 +293,7 @@ view_container <- function(container_name ,
 
   if(viewer == "vnc"){
     port <- get_port(container_name, 5900)
-    bashR::sudo(glue("sudo open vnc://root:secret@localhost:{ port }"))
+    bashR::sudo(glue::glue("sudo open vnc://root:secret@localhost:{ port }"))
   }
 
 }

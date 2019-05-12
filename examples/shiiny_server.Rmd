@@ -51,6 +51,7 @@ To do for container
 ```{r}
 
 container_name <- "shiny_container"
+container_name <- "syro_container"
 
 create_container(image_src = "guiguiplot/shiny_server_base",
                  container_name = container_name,
