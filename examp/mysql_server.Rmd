@@ -1,0 +1,47 @@
+---
+title: "mysql - server"
+author: "Benjamin"
+date: "09/08/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+# Need a mysql client on the 
+# mac : run mysql
+
+mysql
+
+
+
+docker run --name mysql -dt -P -e MYSQL_ROOT_PASSWORD=konstanz -e MYSQL_ROOT_HOST=% -e MYSQL_DATABASE=test -e MYSQL_USER=dbuser -e MYSQL_PASSWORD=konstanz mysql/mysql-server:5.7
+
+docker run --name mysql -dt -P -e MYSQL_ROOT_PASSWORD=konstanz -e MYSQL_DATABASE=test -e MYSQL_USER=dbuser -e MYSQL_PASSWORD=konstanz sql
+
+ip -4 addr show scope global dev ens3 | grep inet | awk '{print \$2}' | cut -d / -f 1
+
+--add-host=local:193.196.36.48
+
+claim = actions vs. attempt
+Typologies of different claims: so what?
++ why should we care?
+
+docker logs mysql
+docker exec -it mysql mysql -uroot -p
+ALTER USER ‘root’@’localhost’ IDENTIFIED BY ‘konstanz’;
+ALTER USER 'root’@‘localhost’ IDENTIFIED WITH mysql_native_password BY ‘konstanz';
+ALTER USER 'dbuser'@'%' IDENTIFIED WITH mysql_native_password BY 'konstanz';
+ALTER USER 'dbuser’@‘localhost’ IDENTIFIED WITH mysql_native_password BY 'konstanz';
+CREATE DATABASE test;
+
+
+ALTER USER ‘dbuser’@‘%’ IDENTIFIED WITH mysql_native_password BY 'konstanz'
+
+
+mydb = dbConnect(RMySQL::MySQL(), user='dbuser', password='konstanz', dbname='test', host='127.0.0.1', port = 32771L)
+
+# List users : SELECT User FROM mysql.user;

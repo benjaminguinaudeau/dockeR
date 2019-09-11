@@ -59,10 +59,14 @@ The function can take other arguments, which can be important if you run contain
 
 ```{r}
 prune_containers()
+
 # First Container
 chrome_1 <- docker$new(
   image_src = "selenium/standalone-chrome-debug", #Image to be used (model for the container)
-  container_name = "chrome_1" # Name you want to use
+  container_name = "chrome_1",
+  other_arguments = "-p 4446:4444 -p 4447:5900"
+  
+  # Name you want to use
 )
 
 ```
@@ -142,6 +146,7 @@ Finally, I implemented a brief function, which relies on vncviewer to open a win
 
 view_container("chrome_1") #Since we have not yet initialize any browser, we do not see anything, but the raw container/mini-computer.
 # Notice that you can throuch vncviewer interact with the container as you would interact with any computer
+
 ```
 
 # Scraping with Selenium based on dockeR

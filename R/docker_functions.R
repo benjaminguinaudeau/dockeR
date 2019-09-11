@@ -18,36 +18,50 @@ list_container <- function(image_src = NULL, not_running = T){
     raw_list <- bashR::sudo("docker ps --no-trunc", intern = T)
   }
 
-  col_names <- raw_list[1] %>% stringr::str_split("\\s{2,}") %>% unlist
-
-  structured_list <- raw_list %>%
-    tail(-1) %>%
-    stringr::str_split("\\s{2,}")
-
-  if(length(structured_list) == 0){
+  if(length(raw_list) == 1){
     return(
       tibble::tibble("container id" = NA_character_,
-             "image" = NA_character_,
-             "command" = NA_character_,
-             "created" = NA_character_,
-             "status" = NA_character_,
-             "ports" = NA_character_,
-             "names" = NA_character_)
+                     "image" = NA_character_,
+                     "command" = NA_character_,
+                     "created" = NA_character_,
+                     "status" = NA_character_,
+                     "ports" = NA_character_,
+                     "names" = NA_character_) %>%
+        janitor::clean_names(.)
     )
   }
 
-  containers <- structured_list %>%
-    purrr::map(~{
-      if(stringr::str_detect(.x[5], "Exited")){
-        .x[7] <- .x[6]
-        .x[6] <- NA
-      }
-      .x
-    }) %>%
-    purrr::reduce(cbind) %>%
-    t %>%
-    tibble::as_tibble(.)
-  names(containers) <- col_names %>% tolower
+  col_names <- raw_list[1]  %>%
+    str_extract_all("(?<=\\s{2}|^).*?(\\s{2,}|$)") %>% .[[1]] %>%
+    stringr::str_trim(.)
+
+  border <- raw_list[1]  %>%
+    str_locate_all("(?<=\\s{2}|^).*?(\\s{2,}|$)") %>% .[[1]]
+
+  containers <- raw_list %>%
+    tail(-1) %>%
+    map_dfr(~{
+      border[nrow(border),2] <- str_length(.x)
+
+      .x %>%
+        str_sub(start = border[,1], end = border[,2]) %>%
+        t %>%
+        as_tibble() %>%
+        set_names(col_names)}) %>%
+    janitor::clean_names(.)
+
+  # containers <- structured_list %>%
+  #   purrr::map(~{
+  #     if(stringr::str_detect(.x[5], "Exited")){
+  #       .x[7] <- .x[6]
+  #       .x[6] <- NA
+  #     }
+  #     .x
+  #   }) %>%
+  #   purrr::reduce(cbind) %>%
+  #   t %>%
+  #   tibble::as_tibble(.)
+  # names(containers) <- col_names %>% tolower
 
   if(!is.null(image_src)){
     containers <- containers %>%
@@ -128,6 +142,36 @@ is_running <- function(name = NULL,
   }
 }
 
+#' get_driver
+#' @export
+
+get_driver <- function(port){
+
+  eCaps <- list(
+    chromeOptions =
+      list(
+        prefs = list(
+          "profile.default_content_settings.popups" = 0L
+          # "download.prompt_for_download" = F
+          # #"download.default_directory" = "~/extract_temp"
+        ),
+        args = c('--disable-dev-shm-usage',  '--disable-gpu')# '--no-sandbox', '--headless') #  '--window-size=1200,1800' , ,
+      )
+  )
+
+  driver <- remoteDriver(
+    remoteServerAddr = "localhost",
+    port = port,
+    browserName = "chrome",
+    extraCapabilities = eCaps
+  )
+
+  driver$open()
+
+  return(driver)
+}
+
+
 #' list_images
 #' @export
 
@@ -160,7 +204,7 @@ create_container <- function(image_src = NULL,
       stop(glue("A container is already named { container_name }.\n
                 Please choose another name"))
     }
-    }
+  }
 
   name <- ifelse(is.null(container_name), "", glue::glue("--name { container_name }"))
   expose_port <- ifelse(is.null(expose_port), "", glue::glue_collapse(glue::glue("--expose { expose_port }"), " "))

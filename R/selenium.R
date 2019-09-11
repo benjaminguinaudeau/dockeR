@@ -39,7 +39,7 @@ send_keys <- function(browser, ...){
 
 #' click
 #' @export
-click <- function(browser, value, using = "css selector", return = NULL){
+click <- function(browser, value, using = "css selector", return = ""){
   if("remoteDriver" %in% class(browser)){
     elem <- browser$findElement(using, value)
     elem$clickElement()
@@ -66,13 +66,34 @@ get_real_source_code <- function(browser, filepath = NULL){
 
   tmp <- browser$executeScript("return window.document.getElementsByTagName('html')[0].innerHTML")
 
-  tmp[[1]] %>%
-    xml2::read_html() %>%
-    xml2::write_html(nnn, file = filepath)
+  page <- tmp[[1]] %>%
+    xml2::read_html()
 
-  message(glue("Source code was saved under { filepath }"))
+  if(is.null(filepath)){
+    return(page)
+  } else {
+    page %>% xml2::write_html(., file = filepath)
+    message(glue("Source code was saved under { filepath }"))
+  }
+
 }
 
+
+#' wait_and_click
+#' @export
+wait_and_click <- function(chrome, n_wait = 4, value = "", using = "css selector", return = ""){
+  n <- n_wait
+  while(n > 0){
+    res <- silently(try(chrome %>% element(value = value, using = using), silent = T))
+    n <- ifelse(class(res) == "try-error", n -.5, 0)
+    Sys.sleep(.5)
+  }
+  chrome %>% click(value, using, return)
+}
+
+#' silently
+#' @export
+silently <- function(x){suppressMessages(suppressWarnings(x))}
 
 
 
