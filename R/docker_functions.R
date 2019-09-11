@@ -32,22 +32,22 @@ list_container <- function(image_src = NULL, not_running = T){
   }
 
   col_names <- raw_list[1]  %>%
-    str_extract_all("(?<=\\s{2}|^).*?(\\s{2,}|$)") %>% .[[1]] %>%
+    stringr::str_extract_all("(?<=\\s{2}|^).*?(\\s{2,}|$)") %>% .[[1]] %>%
     stringr::str_trim(.)
 
   border <- raw_list[1]  %>%
-    str_locate_all("(?<=\\s{2}|^).*?(\\s{2,}|$)") %>% .[[1]]
+    stringr::str_locate_all("(?<=\\s{2}|^).*?(\\s{2,}|$)") %>% .[[1]]
 
   containers <- raw_list %>%
     tail(-1) %>%
-    map_dfr(~{
-      border[nrow(border),2] <- str_length(.x)
+    purrr::map_dfr(~{
+      border[nrow(border),2] <- stringr::str_length(.x)
 
       .x %>%
-        str_sub(start = border[,1], end = border[,2]) %>%
+        stringr::str_sub(start = border[,1], end = border[,2]) %>%
         t %>%
-        as_tibble() %>%
-        set_names(col_names)}) %>%
+        tibble::as_tibble(.) %>%
+        purrr::set_names(col_names)}) %>%
     janitor::clean_names(.)
 
   # containers <- structured_list %>%
@@ -65,7 +65,7 @@ list_container <- function(image_src = NULL, not_running = T){
 
   if(!is.null(image_src)){
     containers <- containers %>%
-      filter(image %>% stringr::str_detect(image_src))
+      dplyr::filter(image %>% stringr::str_detect(image_src))
 
     if(nrow(containers) == 0){
       message(glue::glue("No container build from image \"{ image_src }\" has been found"))
@@ -142,48 +142,18 @@ is_running <- function(name = NULL,
   }
 }
 
-#' get_driver
-#' @export
-
-get_driver <- function(port){
-
-  eCaps <- list(
-    chromeOptions =
-      list(
-        prefs = list(
-          "profile.default_content_settings.popups" = 0L
-          # "download.prompt_for_download" = F
-          # #"download.default_directory" = "~/extract_temp"
-        ),
-        args = c('--disable-dev-shm-usage',  '--disable-gpu')# '--no-sandbox', '--headless') #  '--window-size=1200,1800' , ,
-      )
-  )
-
-  driver <- remoteDriver(
-    remoteServerAddr = "localhost",
-    port = port,
-    browserName = "chrome",
-    extraCapabilities = eCaps
-  )
-
-  driver$open()
-
-  return(driver)
-}
-
-
 #' list_images
 #' @export
 
 list_images <- function(){
   bashR::sudo("docker images", intern = T) %>%
-    map(str_split, "\\s{2,}") %>%
-    map(unlist) %>%
-    map_dfc(as_tibble) %>%
+    purrr::map(stringr::str_split, "\\s{2,}") %>%
+    purrr::map(unlist) %>%
+    purrr::map_dfc(tibble::as_tibble) %>%
     t %>%
     as.data.frame %>%
-    as_tibble %>%
-    set_names(as.character(t(.[1,]))) %>%
+    tibble::as_tibble(.) %>%
+    purrr::set_names(as.character(t(.[1,]))) %>%
     tail(-1) %>%
     janitor::clean_names(.)
 

@@ -42,7 +42,7 @@ docker <- R6::R6Class(
           } else {
 
             container <- list_container() %>%
-              filter(names == container_name)
+              dplyr::filter(names == container_name)
 
             private$image_src <- container$image
             self$container_name <- container_name
@@ -57,7 +57,7 @@ docker <- R6::R6Class(
         } else {
 
           name <- ifelse(is.null(container_name), "", glue::glue("--name { container_name }"))
-          expose_port <- ifelse(is.null(expose_port), "", glue::glue_collapse(glue("--expose { expose_port }"), " "))
+          expose_port <- ifelse(is.null(expose_port), "", glue::glue_collapse(glue::glue("--expose { expose_port }"), " "))
           port <- ifelse(is.null(port), "P", glue::glue(" -p { port }"))
           arg <- ifelse(is.null(other_arguments), "", other_arguments)
 
