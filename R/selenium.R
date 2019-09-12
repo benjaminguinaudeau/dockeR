@@ -131,5 +131,9 @@ wait_and_click <- function(chrome, n_wait = 4, value = "", using = "css selector
 #' @export
 silently <- function(x){suppressMessages(suppressWarnings(x))}
 
-
+#' get_class
+#' @export
+get_class <- function(elems){
+  elems %>% purrr::map_chr(~.x$getElementAttribute("class")[[1]])
+}
 
