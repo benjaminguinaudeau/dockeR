@@ -137,3 +137,23 @@ get_class <- function(elems){
   elems %>% purrr::map_chr(~.x$getElementAttribute("class")[[1]])
 }
 
+#' find_child
+#' @export
+find_child <- function(element, value = "", using = "css selector"){element$findChildElement(value = value, using = using)}
+#' find_children
+#' @export
+find_children <- function(element, value = "", using = "css selector"){element$findChildElements(value = value, using = using)}
+#' get_text
+#' @export
+get_text <- function(element){element$getElementText()[[1]]}
+#' switch_to_frame
+#' @export
+switch_to_frame <- function(chrome, div_value = "", div_using = "css selector",
+                            frame_value = "", frame_using = "name"){
+  elem <- chrome %>%
+    element(div_value, div_using) %>%
+    find_child(frame_value, frame_using)
+
+  chrome$switchToFrame(elem)
+}
+
