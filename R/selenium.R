@@ -1,3 +1,19 @@
+#' chrome_init
+#' @export
+
+chrome_init <- function(view = T){
+
+  if(!"chrome" %in% dockeR::existing_containers()){
+    dockeR::create_container("selenium/standalone-chrome-debug", "chrome")
+    Sys.sleep(4)
+  }
+  if("chrome" %in% dockeR::stopped_containers()){dockeR::start_container("chrome")}
+  if("chrome" %in% dockeR::running_containers()){chrome <- dockeR::get_driver(port = dockeR::get_port("chrome", 4444))}
+
+  if(view == T){dockeR::view_container("chrome")}
+  return(chrome)
+}
+
 #' get_driver
 #' @export
 
@@ -135,6 +151,17 @@ silently <- function(x){suppressMessages(suppressWarnings(x))}
 #' @export
 get_class <- function(elems){
   elems %>% purrr::map_chr(~.x$getElementAttribute("class")[[1]])
+}
+
+#' check_element
+#' @export
+check_element <- function(chrome, value, using = "css selector"){
+  element <- silently(try(chrome$findElement(using, value), silent = T))
+  if(class(element)[1] == "try-error"){
+    return(F)
+  } else {
+    return(T)
+  }
 }
 
 #' find_child
