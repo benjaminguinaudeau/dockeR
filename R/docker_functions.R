@@ -315,11 +315,14 @@ get_port <- function(container_name, filter_port = NULL){
 #' @export
 
 view_container <- function(container_name ,
+                           server = "",
+                           port = "",
                            viewer = "vnc"){
+  server <- ifelse(server == "", "localhost", server)
+  port <- ifelse(port == "", get_port(container_name, 5900), port)
 
   if(viewer == "vnc"){
-    port <- get_port(container_name, 5900)
-    bashR::sudo(glue::glue("sudo open vnc://root:secret@localhost:{ port }"))
+    bashR::sudo(glue::glue("sudo open vnc://root:secret@{server}:{ port }"))
   }
 
 }

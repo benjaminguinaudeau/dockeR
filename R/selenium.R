@@ -1,16 +1,23 @@
 #' chrome_init
 #' @export
 
-chrome_init <- function(view = T){
+chrome_init <- function(view = T, name = ""){
 
-  if(!"chrome" %in% dockeR::existing_containers()){
-    dockeR::create_container("selenium/standalone-chrome-debug", "chrome")
+  name <- ifelse(name == "", "chrome", name)
+
+  if(!name %in% dockeR::existing_containers()){
+    dockeR::create_container("selenium/standalone-chrome-debug", name)
     Sys.sleep(4)
   }
-  if("chrome" %in% dockeR::stopped_containers()){dockeR::start_container("chrome")}
-  if("chrome" %in% dockeR::running_containers()){chrome <- dockeR::get_driver(port = dockeR::get_port("chrome", 4444))}
+  if(name %in% dockeR::stopped_containers()){
+    dockeR::start_container(name)
+    here("10_data-fetching/provider/sportmonks")
+    }
+  if(name %in% dockeR::running_containers()){
+    chrome <- dockeR::get_driver(port = dockeR::get_port(name, 4444))
+    }
 
-  if(view == T){dockeR::view_container("chrome")}
+  if(view == T){dockeR::view_container(name)}
   return(chrome)
 }
 
