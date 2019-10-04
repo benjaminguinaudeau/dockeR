@@ -11,7 +11,7 @@ chrome_init <- function(view = T, name = ""){
   }
   if(name %in% dockeR::stopped_containers()){
     dockeR::start_container(name)
-    here("10_data-fetching/provider/sportmonks")
+    Sys.sleep(4)
     }
   if(name %in% dockeR::running_containers()){
     chrome <- dockeR::get_driver(port = dockeR::get_port(name, 4444))
