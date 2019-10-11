@@ -4,7 +4,8 @@
 \alias{view_container}
 \title{view_container}
 \usage{
-view_container(container_name, viewer = "vnc")
+view_container(container_name, server = "", port = "",
+  viewer = "vnc")
 }
 \arguments{
 \item{container_name}{The name of a container to visualize}

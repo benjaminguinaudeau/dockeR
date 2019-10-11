@@ -7,14 +7,14 @@ chrome_init <- function(view = T, name = ""){
 
   if(!name %in% dockeR::existing_containers()){
     dockeR::create_container("selenium/standalone-chrome-debug", name)
-    Sys.sleep(4)
+    bashR::wait(4, .5)
   }
   if(name %in% dockeR::stopped_containers()){
     dockeR::start_container(name)
-    Sys.sleep(4)
+    bashR::wait(4, .5)
     }
   if(name %in% dockeR::running_containers()){
-    chrome <- dockeR::get_driver(port = dockeR::get_port(name, 4444))
+    chrome <- dockeR::quiet(dockeR::get_driver(port = dockeR::get_port(name, 4444)))
     }
 
   if(view == T){dockeR::view_container(name)}
@@ -150,9 +150,20 @@ wait_and_click <- function(chrome, n_wait = 4, value = "", using = "css selector
   wait_until(chrome, n_wait = n_wait, value = value, using = using, return = return, click = T)
 }
 
+#' quiet
+#' @export
+
+quiet <- function(x) {
+  sink(tempfile())
+  on.exit(sink())
+  invisible(force(x))
+}
+
 #' silently
 #' @export
-silently <- function(x){suppressMessages(suppressWarnings(x))}
+silently <- function(x){
+  suppressMessages(suppressWarnings(x))
+  }
 
 #' get_class
 #' @export
