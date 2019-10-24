@@ -53,7 +53,8 @@ send_message <- function(chrome, message){
 
 
 ```{r setup, include=FALSE}
-chrome <- chrome_init(view = F, name = "whatsapp")
+chrome <- chrome_init(view = T, name = "whatsapp",ua = 2)
+
 dockeR::get_port("whatsapp", 5900)
 
 
@@ -65,6 +66,8 @@ names <- c("Sandra", "Dominique")
 chrome %>% new_conversation(numbers[1], names[1])
 Sys.sleep(1)
 chrome %>% new_conversation(numbers[2], names[2])
+
+dockeR::user_agents[1]
 
 chrome %>% send_message("test")
 

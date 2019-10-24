@@ -1,7 +1,9 @@
+
+
 #' chrome_init
 #' @export
 
-chrome_init <- function(view = T, name = ""){
+chrome_init <- function(view = T, name = "", ua = 1){
 
   name <- ifelse(name == "", "chrome", name)
 
@@ -14,7 +16,7 @@ chrome_init <- function(view = T, name = ""){
     bashR::wait(4, .5)
     }
   if(name %in% dockeR::running_containers()){
-    chrome <- dockeR::quiet(dockeR::get_driver(port = dockeR::get_port(name, 4444)))
+    chrome <- dockeR::quiet(dockeR::get_driver(port = dockeR::get_port(name, 4444), ua = ua))
     }
 
   if(view == T){dockeR::view_container(name)}
@@ -24,8 +26,7 @@ chrome_init <- function(view = T, name = ""){
 #' get_driver
 #' @export
 
-get_driver <- function(port){
-
+get_driver <- function(port, ua = 1){
   eCaps <- list(
     chromeOptions =
       list(
@@ -34,7 +35,9 @@ get_driver <- function(port){
           # "download.prompt_for_download" = F
           # #"download.default_directory" = "~/extract_temp"
         ),
-        args = c('--disable-dev-shm-usage',  '--disable-gpu')# '--no-sandbox', '--headless') #  '--window-size=1200,1800' , ,
+        args = c('--disable-dev-shm-usage',
+                 '--disable-gpu',
+                 glue::glue('--user-agent="{user_agents[ua]}"'))# '--no-sandbox', '--headless') #  '--window-size=1200,1800' , ,
       )
   )
 
