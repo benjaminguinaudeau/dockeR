@@ -1,0 +1,73 @@
+---
+title: "whatsapp"
+output: html_document
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+devtools::install_github("benjaminguinaudeau/dockeR")
+pacman::p_load(tidyverse, dockeR)
+```
+
+
+```{r}
+new_conversation <- function(chrome, number, name){
+  chrome %>% 
+    elements("._3j8Pd") %>%
+    .[[2]] %>%
+    click
+  
+  Sys.sleep(1)
+  
+  chrome %>%
+    element("._2zCfw.copyable-text.selectable-text") %>%
+    send_keys(list(number))
+  
+  Sys.sleep(1)
+  
+  response <- chrome %>%
+    elements("._2UaNq") 
+  
+  true_element <- response %>%
+    map_chr(get_text) %>%
+    str_detect(name) %>%
+    which %>%
+    .[1]
+  
+  response[[true_element]] %>% click
+}
+
+send_message <- function(chrome, message){
+  chrome %>%
+    element("._3u328.copyable-text.selectable-text") %>%
+    send_keys(list(message))
+  
+  chrome %>% click("._3M-N-")
+}
+
+```
+
+
+
+```{r setup, include=FALSE}
+chrome <- chrome_init(view = F, name = "whatsapp")
+dockeR::get_port("whatsapp", 5900)
+
+
+chrome %>% go("https://web.whatsapp.com/")
+
+numbers <- c("+491731922344", "+33688888501")
+names <- c("Sandra", "Dominique")
+
+chrome %>% new_conversation(numbers[1], names[1])
+Sys.sleep(1)
+chrome %>% new_conversation(numbers[2], names[2])
+
+chrome %>% send_message("test")
+
+
+
+```
