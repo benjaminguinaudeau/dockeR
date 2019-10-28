@@ -1,4 +1,47 @@
+#' clear
+#' @export
 
+clear <- function(element){
+  element$clearElement()
+}
+
+
+#' highlight
+#' @export
+highlight <- function(element, wait = NULL){
+  element$highlightElement(wait = wait)
+}
+
+#' set_attribute
+#' @export
+
+set_attribute <- function(elements, attr, value){
+  if(class(elements)[[1]] != "list"){elements <- list(elements)}
+  elements %>%
+    purrr::map_chr(~{
+      out <- .x$setElementAttribute(attributeName = attr, value = value)
+      out <- ifelse(length(out) == 0, NA_character_, out[[1]])
+      return(out)
+    })
+}
+
+#' get_attribute
+#' @export
+
+get_attribute <- function(elements, attr){
+  if(class(elements)[[1]] != "list"){elements <- list(elements)}
+  elements %>%
+    purrr::map_chr(~{
+      out <- .x$getElementAttribute(attr)
+      out <- ifelse(length(out) == 0, NA_character_, out[[1]])
+      return(out)
+    })
+}
+
+#' keys
+#' @export
+
+keys <- RSelenium::selKeys
 
 #' chrome_init
 #' @export
@@ -14,10 +57,10 @@ chrome_init <- function(view = T, name = "", ua = 1){
   if(name %in% dockeR::stopped_containers()){
     dockeR::start_container(name)
     bashR::wait(4, .5)
-    }
+  }
   if(name %in% dockeR::running_containers()){
     chrome <- dockeR::quiet(dockeR::get_driver(port = dockeR::get_port(name, 4444), ua = ua))
-    }
+  }
 
   if(view == T){dockeR::view_container(name)}
   return(chrome)
@@ -166,7 +209,7 @@ quiet <- function(x) {
 #' @export
 silently <- function(x){
   suppressMessages(suppressWarnings(x))
-  }
+}
 
 #' get_class
 #' @export
