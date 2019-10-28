@@ -1,3 +1,40 @@
+
+#' filter.webElement
+#' @export
+
+filter.webElement <- function(elements, attr, value){
+  if(class(elements)[[1]] != "list"){elements <- list(elements)}
+  values <- elements %>%
+    get_attribute(attr)
+
+  to_select <- which(values %in% value)
+
+  if(length(to_select) != 0){
+    out <- elements[to_select]
+    if(length(out) == 1){out <- out[[1]]}
+    return(out)
+  } else {
+    return(list())
+  }
+
+}
+
+#' get_all_attribute
+#' @export
+
+get_all_attribute <- function(element){
+  element %>%
+    get_attribute("outerHTML") %>%
+    stringr::str_extract("<.*?>") %>%
+    stringr::str_extract_all('\\w+=\\".*?\\"') %>% .[[1]] %>%
+    stringr::str_split("\\=", n = 2) %>%
+    purrr::map_dfc(~{
+      tibble::tibble(stringr::str_remove_all(.x[2], '"')) %>%
+        purrr::set_names(.x[1])
+    }) %>%
+    dplyr::mutate(element = list(element))
+}
+
 #' clear
 #' @export
 
