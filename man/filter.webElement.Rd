@@ -4,7 +4,7 @@
 \alias{filter.webElement}
 \title{filter.webElement}
 \usage{
-\method{filter}{webElement}(elements, attr, value)
+filter.webElement(elements, attr, value)
 }
 \description{
 filter.webElement

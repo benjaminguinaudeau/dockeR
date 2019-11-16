@@ -326,3 +326,22 @@ view_container <- function(container_name ,
   }
 
 }
+
+#' doc_copy
+#' @export
+
+doc_copy <- function(container, from = NULL, from_cont = NULL, to = NULL, to_cont = NULL){
+  if(!is.null(from)){src <- from}
+  if(!is.null(from_cont)){src <- paste(container, from_cont, sep = ":")}
+  if(!is.null(to)){dest <- to}
+  if(!is.null(to_cont)){dest <- paste(container, to_cont, sep = ":")}
+
+  bashR::sudo(glue::glue("docker cp {src} {dest}"))
+}
+
+
+#' doc_copy
+#' @export
+doc_exec <- function(container_name, command, ...){
+  bashR::sudo(glue::glue("docker exec -t {container_name} {command}"), ...)
+}
