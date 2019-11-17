@@ -19,6 +19,28 @@ filter.webElement <- function(elements, attr, value){
 
 }
 
+#' renew_window
+#' @export
+
+renew_window <- function(chrome, max = T){
+  if(!max){max_size <- function(x) return(x)}
+  chrome %>%
+    close_all %>% open %>% max_size
+}
+
+
+#' open.remoteDriver
+#' @export
+open.remoteDriver <- function(chrome){dockeR::quiet(chrome$open()) ; return(invisible(chrome))}
+
+#' close_all
+#' @export
+close_all <- function(chrome){chrome$closeall() ; return(invisible(chrome))}
+
+#' max_size
+#' @export
+max_size <- function(chrome){chrome$maxWindowSize(); return(invisible(chrome))}
+
 #' get_all_attribute
 #' @export
 
@@ -283,5 +305,6 @@ switch_to_frame <- function(chrome, div_value = "", div_using = "css selector",
     find_child(frame_value, frame_using)
 
   chrome$switchToFrame(elem)
+  return(invisible(chrome))
 }
 
