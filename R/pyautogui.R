@@ -25,12 +25,22 @@ doc_mouse_move <- function(x, y){
 #' nullify
 #' @export
 
-nullify <- function(x, pre = "x = ", suf = ", "){ifelse(is.null(x), " ", paste0(pre, x, suf))}
+nullify <- function(x, pre = "x = ", suf = ", "){
+  ifelse(is.null(x), " ", paste0(pre, x, suf))
+  }
 
 #' doc_mouse_click
 #' @export
 
 doc_mouse_click <- function(x = NULL, y = NULL, button = "left"){
+
+  if(!is.null(x)){
+    x <- sample(x, 1)
+  }
+  if(!is.null(y)){
+    y <- sample(y, 1)
+  }
+
   x <- nullify(x, "x = ", ", ")
   y <- nullify(y, "y = ", ", ")
 
@@ -63,8 +73,8 @@ doc_scroll <- function(x){
 doc_locate_on_screen <- function(x){
   out <- doc_exec("chrome", glue::glue("sudo python -c \"from pyautogui import * ; locateOnScreen({x})\""), intern = T)
 
-  x <- stringr::str_extract(pos, "(?<=x=)\\d+")
-  y <- stringr::str_extract(pos, "(?<=y=)\\d+")
+  x <- stringr::str_extract(out, "(?<=x=)\\d+")
+  y <- stringr::str_extract(out, "(?<=y=)\\d+")
 }
 
 #' doc_screenshot
@@ -75,3 +85,11 @@ doc_screenshot <- function(file = NULL, region = NULL){
   region <- nullify(region, "region = ")
   doc_exec("chrome", glue::glue("sudo python -c \"from pyautogui import * ; screenshot({file} {region})\""))
 }
+
+#' doc_press
+#' @export
+
+doc_press <- function (key) {
+  doc_exec("chrome", glue::glue("python -c \"from pyautogui import * ; press('{key}' )\""))
+}
+

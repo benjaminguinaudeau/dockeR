@@ -331,17 +331,35 @@ view_container <- function(container_name ,
 #' @export
 
 doc_copy <- function(container, from = NULL, from_cont = NULL, to = NULL, to_cont = NULL){
-  if(!is.null(from)){src <- from}
-  if(!is.null(from_cont)){src <- paste(container, from_cont, sep = ":")}
+
+  clean_url <- function(x){str_replace_all(x, " ", "\\\\ ")}
+
+  if(!is.null(from)){src <- from %>% clean_url}
+  if(!is.null(from_cont)){src <- paste(container, from_cont, sep = ":") %>% clean_url}
   if(!is.null(to)){dest <- to}
-  if(!is.null(to_cont)){dest <- paste(container, to_cont, sep = ":")}
+  if(!is.null(to_cont)){dest <- paste(container, to_cont, sep = ":") %>% clean_url}
 
   bashR::sudo(glue::glue("docker cp {src} {dest}"))
 }
 
 
-#' doc_copy
+#' doc_exec
 #' @export
 doc_exec <- function(container_name, command, ...){
   bashR::sudo(glue::glue("docker exec -t {container_name} {command}"), ...)
 }
+
+#' doc_remove_folder
+#' @export
+doc_remove_folder <- function(container, folder){
+  doc_exec("chrome", glue::glue("rm -Rf {folder}"))
+}
+
+#' doc_list_file
+#' @export
+doc_list_file <- function(container, folder){
+  silently(try(doc_exec("chrome", "ls {folder}",
+                        intern = T) %>%
+                 str_trim))
+}
+
