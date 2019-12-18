@@ -60,7 +60,7 @@ dockeR::get_port("whatsapp", 5900)
 
 chrome %>% go("https://web.whatsapp.com/")
 
-numbers <- c("+491731922344", "+33688888501")
+numbers <- c("+491731922312", "+33688888654")
 names <- c("Sandra", "Dominique")
 
 chrome %>% new_conversation(numbers[1], names[1])

@@ -1,3 +1,16 @@
+---
+output: github_document
+---
+
+```{r, include=F}
+
+knitr::opts_chunk(eval = FALSE)
+
+```
+
+# TODO
++ Check whether docker Daemon is running
+
 # dockeR
 
 The aim of this package is to facilitate Web Scraping with Selenium. The package proposes the following tools: 
@@ -13,21 +26,25 @@ To install docker-ce on rocker.
 # Required Packages
 
 ```{r}
-library(dplyr)
-library(stringr)
-library(purrr)
-library(glue)
+
+
+# library(dplyr)
+# library(stringr)
+# library(purrr)
+# library(glue)
+
 devtools::load_all()
 
 ```
 
 # Running a first container
 
-The first task to be completed with this package is to create a container. Containers can be understood as local copy (instance) of a model (image). Depending of the task you want to complete, you can choose among thousands of models (images).
+The first task to be completed with this package is to create a container. Containers can be seen as local copy (instance) of a model (image). Depending of the task you want to complete, you can choose among thousands of models (images).
 
 Docker images are stored and shared online through docker hub. Here, I will use images from two different repository: selenium and rocker. 
 
 ## Selenium
+
 Images from the Selenium repo allows to simulate a browser. This can be very usefull either to test websites or web applications or to scrape complex website (basically as soon as a website is not static, you cannot count on your good old friend rvest and hast to require to more complex tools such as Selenium). The repo proposes several browser: chrome, firefox, phantomjs. Each is presented in different version, but honnestly I don't get the difference between the standalone and the node version. I usually use selenium/standalone-chrome-debug which has the nice feature of opening the port 5900, which allows the see what happens in the browser. 
 
 ## Rocker
@@ -61,9 +78,9 @@ The function can take other arguments, which can be important if you run contain
 prune_containers()
 
 # First Container
-chrome_1 <- docker$new(
+chrome <- docker$new(
   image_src = "selenium/standalone-chrome-debug", #Image to be used (model for the container)
-  container_name = "chrome_1",
+  container_name = "chrome",
   other_arguments = "-p 4446:4444 -p 4447:5900"
   
   # Name you want to use
@@ -74,19 +91,20 @@ chrome_1 <- docker$new(
 We can check if the container was successfully created using the list_container function. This function returns a tibble summarizing the most important informations on the created container. 
 
 ```{r}
-list_container()
+list_container() %>%
+  dplyr::glimpse()
 ```
 
 Once a container has been created, it is automatically running. But you can stop it and restart it. As long as you do not remove it, the container will remain.
 
 ```{r}
-chrome_1$stop()
-chrome_1$start()
-chrome_1$stop()
+chrome$stop()
+chrome$start()
+chrome$stop()
 
-# stop_container("chrome_1")
-# start_container("chrome_1")
-# stop_container("chrome_1")
+# stop_container("chrome")
+# start_container("chrome")
+# stop_container("chrome")
 ```
 
 Now, I create a second and a third container.
@@ -104,9 +122,11 @@ phantomJS <- docker$new(
   container_name = "phantomJS" # Name you want to use
 )
 
-list_images()
+list_images() %>%
+  dplyr::glimpse()
 
-list_container()
+list_container() %>%
+  dplyr::glimpse()
 ```
 
 I implemented a couple of function which are usefull to get a sense of which container are existing, running and stopped. 
@@ -132,9 +152,9 @@ firefox$stop(remove = T)
 A very important parameter when dealing with docker regards the ports. Ports are literally the doors of computers and are identified with integer. Per default, all ports are close ; when we create a container we open can either expose specific ports of the container (which means opening it for any connection) or allocate specific port of the computer to specific port of the container. For instance, if I want to connect to a server installed on a container using a common http port (4444), then I need to know which port of the computer is linked to the container port 4444. When we create the container, we use the argument "P", which automatically allocate random port to each possible port of the container. To know the number of this port, we can use the function get_port in three different ways. 
 
 ```{r}
-chrome_1$port()
-chrome_1$port(filter_port = 4444L)
-chrome_1$port(filter_port = c(4444L, 5900L))
+chrome %>% get_port
+chrome %>% get_port(filter_port = 4444)
+chrome %>% get_port(filter_port = c(4444, 5900))
 
 ```
 
@@ -144,10 +164,34 @@ Finally, I implemented a brief function, which relies on vncviewer to open a win
 
 ```{r}
 
-view_container("chrome_1") #Since we have not yet initialize any browser, we do not see anything, but the raw container/mini-computer.
+view_container("chrome") #Since we have not yet initialize any browser, we do not see anything, but the raw container/mini-computer.
 # Notice that you can throuch vncviewer interact with the container as you would interact with any computer
 
 ```
+
+# Execute bash code within the container
+
+Sometimes, you will need to execute bash code directly in the container (for instance to install missing libraries). DockeR includes a function allowing to run bash code in the container.
+
+```{r}
+
+chrome <- load_container("chrome")
+
+chrome %>% doc_copy(from = "~/comment.png", to_cont = "/comment.png")
+chrome %>% doc_copy(from_cont = "/comment.png", to = "~/comment_copy.png")
+
+chrome %>% doc_exec("mkdir ~/new_folder")
+chrome %>% doc_exec("mkdir /home/seluser/new_folder", intern = T)
+chrome %>% doc_remove_folder("/home/seluser/new_folder", intern = T)
+
+chrome %>% doc_list_file("/home/seluser/")
+
+
+
+
+```
+
+
 
 # Scraping with Selenium based on dockeR
 
@@ -157,7 +201,8 @@ view_container("chrome_1") #Since we have not yet initialize any browser, we do 
 
 ## Open a tty to interact within 
 ```{r}
-chrome_1$exec("sudo apt-get update && sudo apt-get upgrade")
+chrome %>%
+  doc_$exec("sudo apt-get update -y && sudo apt-get upgrade -y")
 
 ```
 

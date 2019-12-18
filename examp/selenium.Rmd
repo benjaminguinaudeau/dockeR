@@ -1,0 +1,317 @@
+---
+title: "Docker und Selenium auf einem Server Installieren"
+author: "Benjamin"
+date: '2019-01-13'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Docker must be installed
+
+## Linux
+
+```{r}
+# Install docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/1.23.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+
+```
+
+
+# Docker run
+
+```{bash}
+
+mkdir ~/my_compose
+cd ~/my_compose
+
+nano docker-compose.yml
+```
+
+```{bash}
+
+version: '3'
+services:
+  rstudio:
+    image: guiguiplot/rstudio_perso
+    container_name: rstudio
+    ports:
+      - "8787:8787"
+    volumes:
+     - "/stock:/mydata"
+    links:
+      - selenium:selenium
+  selenium:
+    container_name: chrome
+    image: selenium/standalone-chrome-debug
+    ports:
+      - "32002:4444"
+      - "32001:5900"
+
+```
+
+```{bash}
+docker-compose up -d
+```
+
+
+```{r}
+devtools::install_github("benjaminguinaudeau/dockeR")
+pacman::p_load(tidyverse, RSelenium, dockeR)
+
+selenium <- remoteDriver(remoteServerAddr = "selenium", port = 4444L, browserName = "chrome")
+selenium$open()
+
+selenium %>% go("https://www.google.ca")
+
+selenium %>% screenshot()
+selenium %>% screenshot("test.png")
+
+selenium %>%
+  element("q", "name") %>%
+  send_keys(list("Paris"))
+```
+
+
+[Extension for googlechrom](https://chrome.google.com/webstore/detail/vnc®-viewer-for-google-ch/iabmpiboiopbgfabjmgeedhcmjenhbla)
+ 
+Connect to port 32001 ; check whether the port is open if problem on a server.
+
+Connect to the server on port 8787.
+
+```{bash}
+docker exec -it rstudio /bin/bash
+sudo adduser USER 
+# Type Password and enter enter enter
+sudo adduser USER sudo
+sudo chmod o+w  /usr/local/lib/R/site-library
+
+exit
+```
+
+
+```{r}
+termId <- rstudioapi::terminalExecute("ls")
+rstudioapi::terminalExitCode(termId)
+
+
+devtools::install_github("benjaminguinaudeau/dockeR")
+pacman::p_load(tidyverse, RSelenium, dockeR)
+
+selenium <- remoteDriver(remoteServerAddr = "selenium", port = 4444L, browserName = "chrome")
+selenium$open()
+
+selenium %>% go("https://www.google.ca")
+
+selenium %>% screenshot()
+selenium %>% screenshot("test.png")
+
+selenium %>%
+  element("q", "name") %>%
+  send_keys(list("Paris"))
+```
+
+```{r}
+
+tidy_children <- function(elem, id_name = "id_children", text = F){
+  if(class(elem)[[1]] != "list"){elems <- list(elems)}
+  elem %>%
+    find_children("*", "xpath") %>%
+    tidy_elements(id_name = {{id_name}}, text = text)
+}
+
+
+tidy_elements <- function(elems, id_name = "id_parent", text = F){
+  if(class(elems)[[1]] != "list"){elems <- list(elems)}
+  elems %>%
+    map_dfr(get_all_attribute, text = text) %>%
+    mutate({{id_name}} := 1:n())
+}
+
+
+has_children <- function(elem){
+  le <- elem %>% 
+    find_children("*", "xpath") %>%
+    length
+  return(le != 0)
+}
+
+get_attribute_children <- function(elems, depth = 1, text = F){
+  
+  out <- tidy_elements(elems, text = text) %>%
+    mutate(children_1 = map2(element, id_parent,~{
+      .x %>%
+        find_children("*", "xpath") %>%
+        map_dfr(get_all_attribute) %>%
+        rename_all(~paste0(.x, "_1")) %>%
+        mutate(id_parent = .y,
+               id_children_1 = 1:n())
+    }))
+  
+  if(depth == 1) return(out)
+  
+  for(depth_index in 2:depth){
+    
+    
+    child_col <- glue::glue("children_{depth_index}")
+    parent_col <- dplyr::sym(paste0("children_", depth_index - 1))
+    if(all(out %>% pull({{parent_col}}) %>% map_lgl(~length(.x) == 0))){
+      message("Max depth was reached")
+      out <- out[,-length(out)]
+      break()
+    }
+    message("Current depth: ", depth_index)
+    
+    out <- out %>%
+      mutate({{child_col}} := imap({{parent_col}}, ~{
+        # message(.y)
+        if(length(.x) != 0){
+          children_attr <- .x %>%
+            split(1:nrow(.)) %>%
+            imap_dfr(~{
+              if(map_lgl(.x[[paste0("element_", depth_index - 1)]], has_children)){
+                # print(.y)
+                .x %>%
+                  select(paste0("element_", depth_index - 1))  %>%
+                  .[[1]] %>% 
+                  map_dfr(tidy_children) %>% 
+                  rename_all(~paste0(.x, "_", depth_index)) %>%
+                  cbind(select(.x, matches("id_((parent)|(children))"))) %>%
+                  as_tibble 
+              }
+            })
+          
+          if(nrow(children_attr) != 0){return(children_attr)}
+        }
+      }))
+  }
+  return(out)
+}
+
+
+
+
+join_elements <- function(x, y){
+  joining_vars <- names(x)[str_detect(names(x), "id_(parent)|(children)")]
+  message("Joining with ", paste(joining_vars, collapse = " "))
+  x <- x %>% right_join(y, by = joining_vars)
+  return(x)
+}
+
+
+unnest_children <- function(nested.tbl){
+  
+  out <- nested.tbl %>% select(-contains("children"))
+  
+  for(children_col in str_subset(names(nested.tbl), "children_")){
+    out <- join_elements(out, bind_rows(nested.tbl[[children_col]]))
+  }
+  
+  return(out)
+}
+
+unnest_longer_children <- function(nested.tbl){
+  
+  out <- nested.tbl %>% select(-contains("children"))
+  
+  for(children_col in str_subset(names(nested.tbl), "children_")){
+    tmp <- bind_rows(nested.tbl[[children_col]])
+    
+    out <- tmp %>%
+      rename_at(vars(-contains("id_parent"), -contains("id_children")), ~str_remove(.x, "(?<!=children)_\\d")) %>%
+      mutate(layer = max(as.numeric(str_extract(names(tmp), "\\d+")), na.rm = T)) %>%
+      bind_rows(out)
+    
+  }
+  
+  return(out)
+}
+
+```
+
+```{r}
+data <- out %>%
+  select(contains("id_children"), contains("href")) %>%
+  mutate_all(as.character) %>%
+  mutate(id = as.factor(1:n())) %>%
+  pivot_longer(-id) %>%
+  separate(name, sep = "_(?=\\d)", into = c("type", "layer")) %>%
+  pivot_wider(id_cols = c(id, layer), names_from = type, values_from = value) %>%
+  mutate(href = is.na(href)) %>%
+  group_by_at(vars(layer, id_children, href)) %>%
+  count() %>%
+  ungroup %>%
+  mutate(id = 1:n()) %>%
+  pivot_wider(id_cols = c(id, layer), names_from = id_children, values_from = n)
+
+
+data %>%
+  mutate(id_children_2 = paste(id_children_1, id_children_2, sep = "_")) %>%
+  mutate(id_children_3 = paste(id_children_2, id_children_3, sep = "_")) %>%
+  mutate(id_children_4 = paste(id_children_3, id_children_4, sep = "_")) %>%
+  mutate(id_children_5 = paste(id_children_4, id_children_5, sep = "_")) %>%
+  ggforce::gather_set_data(1:5) %>%
+  ggplot2::ggplot(ggplot2::aes(x, id = as.factor(id), split = y, value = n)) + 
+  ggforce::geom_parallel_sets(aes(fill = n), alpha = 0.3, axis.width = 0.1) + 
+  # ggforce::geom_parallel_sets_axes(axis.width = 0.1) + 
+  # ggforce::geom_parallel_sets_labels(colour = "white") + 
+  ggplot2::theme_classic() + 
+  ggplot2::theme(legend.position = "none", 
+                 line = ggplot2::element_blank()) + 
+  ggplot2::labs(x = "", 
+                y = "")
+```
+
+
+
+```{r}
+chrome <- chrome_init(name = "chrome")
+
+chrome %>% 
+  open %>%
+  go("https://scholar.google.de/scholar?q=legislative+speeches&hl=de&as_sdt=0,5")
+# go("https://lemonde.fr")
+
+
+elems <- chrome %>% elements(".gs_rt")  
+elem <- elems[[1]]
+
+# t <- elems %>% get_attribute_children(depth = 10, text = T)
+# t %>% unnest_children()
+# s <- t %>% unnest_longer_children()
+
+# s %>% filter(!is.na(href))
+# s %>% count(role)
+# s %>% count(text)
+# s %>% count(title)
+# s %>% 
+#   filter(title == "Zitieren") %>%
+#   pull(element) %>%
+#   get_text()
+
+elems <- chrome %>% elements(".gs_rt")  
+bashR::wait(1)
+elems %>%
+  map(~{
+    pos <- chrome %>% get_absolute_location(.x)
+    doc_key_down("ctrl")
+    doc_mouse_moveTo(x = pos$x, y = pos$y)
+    doc_mouse_click(button = "left")
+    doc_key_up("ctrl")
+    # bashR::wait(1)
+  })
+
+doc_mouse_position()
+
+art <- "This article examines how national parties and their members position themselves in European Parliament (EP) debates, estimating the principal latent dimension of spoken conflict using word counts from legislative speeches. We then examine whether the estimated ideal points reflect partisan conflict on a left‚Äìright, European integration or national politics dimension. Using independent measures of national party positions on these three dimensions, we find that the corpus of EP speeches reflects partisan divisions over EU integration and national divisions rather than left‚Äìright politics. These results are robust to both the choice of language used to scale the speeches and to a range of statistical models that account for measurement error of the independent variables and the hierarchical structure of the data." 
+art %>%
+  str_extract_all("((\\b\\w+\\b )|.){1,30}") %>%.[[1]] %>% str_count("(\\b\\w+\\b )")
+
+
+
+```
+

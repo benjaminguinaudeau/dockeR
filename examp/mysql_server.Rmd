@@ -9,10 +9,11 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
 
 
-# Need a mysql client on the 
-# mac : run mysql
+
+# Need a mysql client on the  mac : run mysql
 
 mysql
 
@@ -43,5 +44,6 @@ ALTER USER ‘dbuser’@‘%’ IDENTIFIED WITH mysql_native_password BY 'konsta
 
 
 mydb = dbConnect(RMySQL::MySQL(), user='dbuser', password='konstanz', dbname='test', host='127.0.0.1', port = 32771L)
+```
 
 # List users : SELECT User FROM mysql.user;

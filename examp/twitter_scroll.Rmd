@@ -1,0 +1,251 @@
+---
+title: "twitter_scroll"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+pacman::p_load(tidyverse, magrittr, rvest, tidyweb)
+devtools::load_all()
+```
+
+
+```{r}
+
+
+get_main_tree <- function(chrome){
+  main <-chrome %>% dockeR::element("main") %>% list
+  
+  tree <- main %>%
+    tidy_element_sel(depth = 15)
+  
+  return(tree)
+}
+
+get_tweets <- function(tree){
+  tweet_level <- tree %>%
+    select(contains("children")) %>%
+    # bashR::simule_map(1)
+    map_dbl(~{
+      .x[[1]] %>%
+        count(class) %>%
+        pull(n) %>%
+        max
+    }) %>%
+    is_greater_than(9) %>%
+    which %>%
+    .[1]
+  
+  
+  tweet_layer <- tree %>%
+    select(contains("children")) %>%
+    .[tweet_level] %>%
+    unnest(cols = everything())  %>%
+    add_count(class, name = "total") %>%
+    filter(total == max(total))
+  
+  boundary <- tweet_layer %>%
+    # add_count(paste0("id_children_", tweet_level - 1))  %>%
+    mutate(text = element %>% map_chr(~try(get_text(.x), silent = T))) %>%
+    mutate(trig = text == "") %>%
+    select(text,trig,  everything())  %>%
+    pull(trig) %>%
+    which
+  
+  if(length(boundary) == 1){boundary <- c(1,nrow(tweet_layer) + 1)}
+  
+  tweets <- tweet_layer %>%
+    filter(!1:n() %in% boundary) %>%
+    # tail(-boundary[1]) %>%
+    # head(boundary[2] - boundary[1] - 1)  %>%
+    mutate(html = element %>%  #bashR::simule_map(2)
+             imap_chr(~{
+               # print(.y)
+               if(length(.x) != 0){
+                 .x %>%
+                   get_attribute(attr = "innerHTML")
+                 # xml2::read_html(.) %>%
+                 # as.character()
+                 # list
+               }
+             })
+    )
+  
+  return(tweets)
+}
+
+tweets %>%
+  select(html) %>%
+  mutate(text = html %>% map(read_html) %>% map_chr(~html_text(.x))) %>%
+  select(text)
+
+```
+
+
+
+```{r}
+chrome <- chrome_init("chrome")
+view_container("chrome") 
+
+chrome$closeall()
+chrome$open()
+element
+chrome %>%
+  go("http://twitter.com")
+
+# doc_exec("sudo apt-get -y update")
+# doc_exec("sudo apt-get -y upgrade")
+# doc_exec("sudo apt-get install -y python-pip")
+# doc_exec("pip install pyautogui")
+# doc_exec("sudo apt-get install -y python-tk python-dev")
+
+
+
+login <- "fabio.votta+3@gmail.com"
+pwd <- "vcbsdfbcvMA_21!!"
+doc_mouse_type(login)
+doc_hot_keys("tab")
+doc_mouse_type(pwd)
+doc_hot_keys("tab")
+doc_hot_keys("tab")
+doc_hot_keys("enter")
+
+# Connect
+
+scroll_tweet <- function(chrome){
+  tree <- chrome %>% get_main_tree()
+  tweet <- get_tweets(tree) 
+  # save_tweet <- tweet
+  
+  
+  tweet %>%
+    select(html) %>%
+    mutate(text = html %>% map(read_html) %>% map_chr(~html_text(.x))) %>%
+    select(text) %>%
+    glimpse
+  
+  # save_tweet$html %>%
+  #   map(read_html) %>%
+  #   map(html_structure)
+  # 
+  
+  d <- tweet %>% 
+    select(html, element) %>%
+    mutate(size = element %>% map(~as_tibble(.x$getElementSize()))) %>%
+    unnest(size)
+  
+  low <- sum(tail(d$height, 3))
+  
+  # dockeR::doc_scroll(-10)
+  dockeR::doc_scroll(-low)
+  
+  return(tweet)
+}
+
+save_tweet <- bind_rows(save_tweet, tweet) %>%
+  unique
+
+tweets %>%
+  select(html) %>%
+  mutate(text = html %>% map(read_html) %>% map_chr(~html_text(.x))) %>%
+  select(text)
+
+
+a <- 1:10 %>%
+  map(~{scroll_tweet(chrome)})
+
+a %>% reduce(bind_rows) %>%
+  glimpse
+
+```
+
+```{r}
+tidy_element_sel <- function(elems, depth = 0){
+  
+  out <- elems %>%
+    purrr::map_dfr(tidyweb::get_all_attribute) %>%
+    dplyr::mutate(id_parent = 1:n())
+  
+  depth_index <- 0
+  
+  while(depth_index != depth){
+    
+    depth_index <- depth_index + 1
+    message("Current depth: ", depth_index)
+    child_col <- paste0("children_", depth_index)
+    child_id_col <- paste0("id_children_", depth_index)
+    element_col <- paste0("element_", "depth_index")
+    
+    if(depth_index != 1){
+      parent_col <- dplyr::sym(paste0("children_", depth_index - 1))
+      if(all(out %>% dplyr::pull({{parent_col}}) %>% purrr::map_lgl(~length(.x) == 0))){
+        message("Max depth was reached")
+        # out <- out %>% select(-parent_col)
+        return(out)
+      }
+    }
+    
+    if(depth_index == 1){
+      
+      out <- out %>%
+        dplyr::mutate({{child_col}} := purrr::map2(element, id_parent,~{
+          .x %>%
+            tidyweb::find_children("*", "xpath") %>%
+            purrr::map_dfr(tidyweb::get_all_attribute) %>%
+            dplyr::mutate(id_parent = .y,
+                          {{child_id_col}} := 1:n(),
+                          depth = depth_index)
+        }))
+    } else {
+      
+      out <- out %>%
+        mutate(parents = {{parent_col}}) %>%
+        mutate({{child_col}} := map(parents, ~{
+          if(length(.x) != 0){
+            parent <- .x
+            # child <- children[[1]]
+            
+            parent %>%
+              split(1:nrow(.)) %>%
+              imap_dfr(~{
+                children <- .x$element[[1]] %>%
+                  find_children("*", "xpath")
+                
+                if(length(children) > 0){
+                  children_attr <- children %>%
+                    purrr::map_dfr(tidyweb::get_all_attribute) %>%
+                    cbind(dplyr::select(.x, dplyr::contains("id_"))) %>%
+                    dplyr::as_tibble() %>%
+                    dplyr::mutate({{child_id_col}} := 1:n(),
+                                  depth = depth_index)
+                }
+              })
+          }
+        })) %>%
+        dplyr::select(-parents) 
+    }
+  }
+  
+  out <-   out %>%
+    select(contains("children")) %>%
+    reduce(bind_rows) %>%
+    bind_rows(select(out, -contains("children_"))) %>%
+    # select(id, class, id_parent, contains("id_children"), everything()) %>%
+    # glimpse
+    mutate_at(vars(contains("id_children"), id_parent), as.character) %>%
+    split(1:nrow(.)) %>%
+    map_dfr(get_unique_id) %>%
+    mutate(text = map_chr(element, ~{
+      .x %>%
+        get_text() %>%
+        str_squish
+    })) %>%
+    select(.id, element, text, everything())
+  
+  return(out)
+  
+}
+
+```
+
