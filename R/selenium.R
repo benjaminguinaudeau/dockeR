@@ -126,9 +126,24 @@ chrome_init <- function(view = T, name = "", ua = 1){
 }
 
 #' get_driver
+#'
+#' @param port specify which port you want to connect to
+#' @param ua specify user agent id
+#' @param cache specify cache
 #' @export
+get_driver <- function(port, ua = 1, cache = NULL){
 
-get_driver <- function(port, ua = 1){
+
+  prof_args <-  c('--disable-dev-shm-usage',
+                     '--disable-gpu',
+                     glue::glue('--user-agent="{user_agents[ua]}"'))# '--no-sandbox', '--headless') #  '--window-size=1200,1800' , ,
+
+  ## if cache is given
+  if (!is.null(cache)){
+    prof_args <- c(prof_args,
+                      glue::glue('--user-data-dir=tmp/cache/{cache}'))
+  }
+
   eCaps <- list(
     chromeOptions =
       list(
@@ -137,9 +152,7 @@ get_driver <- function(port, ua = 1){
           # "download.prompt_for_download" = F
           # #"download.default_directory" = "~/extract_temp"
         ),
-        args = c('--disable-dev-shm-usage',
-                 '--disable-gpu',
-                 glue::glue('--user-agent="{user_agents[ua]}"'))# '--no-sandbox', '--headless') #  '--window-size=1200,1800' , ,
+        args = prof_args
       )
   )
 

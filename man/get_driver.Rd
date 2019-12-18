@@ -4,7 +4,14 @@
 \alias{get_driver}
 \title{get_driver}
 \usage{
-get_driver(port, ua = 1)
+get_driver(port, ua = 1, cache = NULL)
+}
+\arguments{
+\item{port}{specify which port you want to connect to}
+
+\item{ua}{specify user agent id}
+
+\item{cache}{specify cache}
 }
 \description{
 get_driver
