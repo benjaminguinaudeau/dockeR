@@ -2,14 +2,20 @@
 output: github_document
 ---
 
-```{r, include=F}
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+<!-- # tidyweb <img src="man/figures/tidyweb_logo.png" width="160px" align="right" /> -->
 
-knitr::opts_chunk(eval = FALSE)
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  eval = F,
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
 
 ```
-
-# TODO
-+ Check whether docker Daemon is running
 
 # dockeR
 
@@ -26,14 +32,7 @@ To install docker-ce on rocker.
 # Required Packages
 
 ```{r}
-
-
-# library(dplyr)
-# library(stringr)
-# library(purrr)
-# library(glue)
-
-devtools::load_all()
+library(dockeR)
 
 ```
 
