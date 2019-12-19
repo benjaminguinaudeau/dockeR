@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# dockeR <img src="man/figures/dockeR_logo.jpeg" width="160px" align="right" />
+# dockeR <img src="man/figures/docker_logo.jpeg" width="160px" align="right" />
 
 The aim of this package is to facilitate Web Scraping with Selenium. The
 package proposes the following tools:
@@ -261,4 +261,4 @@ chrome %>%
 ## Thanks
 
 A huge thank you to [Favstats](https://github.com/favstats) for
-designing each of the hex-stickers.
+designing the hex-sticker.

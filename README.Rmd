@@ -3,7 +3,7 @@ output: github_document
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-# dockeR <img src="man/figures/dockeR_logo.jpeg" width="160px" align="right" />
+# dockeR <img src="man/figures/docker_logo.jpeg" width="160px" align="right" />
 
 
 ```{r, include = FALSE}
@@ -205,4 +205,4 @@ chrome %>%
 
 ## Thanks
 
-A huge thank you to [Favstats](https://github.com/favstats) for designing each of the hex-stickers. 
+A huge thank you to [Favstats](https://github.com/favstats) for designing the hex-sticker. 
