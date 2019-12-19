@@ -24,6 +24,11 @@ check_container_name <- function(container){
 
   if(class(container) == "R6"){
     return(chrome$container_name)
+  } else if(class(container) == "remoteDriver"){
+    name <- list_container() %>%
+      dplyr::filter(stringr::str_detect(ports, as.character(container$port))) %>%
+      dplyr::pull(names)
+    return(name)
   } else {
     return(container)
   }

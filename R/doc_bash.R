@@ -16,9 +16,8 @@ doc_exec <- function(container_name,
               ...)
 
 
-
   if(!intern){return(invisible(T))}
-  if(!intern){return(out)}
+  if(intern){return(out)}
 }
 
 #' doc_remove_folder
