@@ -1,0 +1,32 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+options(usethis.full_name = "Benjamin Guinaudeau")
+library(pkgverse)
+
+tidybrowser <- c("RSelenium", "dockeR", "tidyselenium", "tidyweb", "selinput", "bashR", "dplyr", "usethis")
+
+## create packages dir
+# dir.create("../tidybrowser")
+
+## create tidyweb pkgverse
+pkgverse(pkg = "tidybrowser",
+         pkgs = tidybrowser,
+         keep = "..",
+         # use = c("readme_rmd", "rstudio", "mit_license", "git"),
+         install_if = TRUE
+)
+
+library(tidybrowser)
+
+  create_from_github(repo_spec = "benjaminguinaudeau/tidybrowser",
+                     destdir = "../")
+```
+

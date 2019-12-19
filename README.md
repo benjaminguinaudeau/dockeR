@@ -1,15 +1,15 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-<!-- # tidyweb <img src="man/figures/tidyweb_logo.png" width="160px" align="right" /> -->
-
-# dockeR
+# dockeR <img src="man/figures/dockeR_logo.jpeg" width="160px" align="right" />
 
 The aim of this package is to facilitate Web Scraping with Selenium. The
-package proposes the following tools: + Creating a new container with
-Selenium Installed + Some basic tools allowing to get informations on
-docker containers (name, time, type, http ports, viewing ports) + Some
-basic Selenium function aimed at making webscraping easy
+package proposes the following tools:
+
+  - Creating a new container with Selenium Installed
+  - Some basic tools allowing to get informations on docker containers
+    (name, time, type, http ports, viewing ports)
+  - Some basic Selenium function aimed at making webscraping easy
 
 # Getting Docker installed
 
@@ -102,15 +102,17 @@ images and container and to help you to get rid of useless instance
 
 Let’s try it, using the the function create\_container.
 
-The two arguments are the most important ones for Selenium : +
-image\_src specifies the images on which the container should be built.
-Note that similarly to github packages, we specify the docker-hub url
-with the repo and the image to create. If you want to install an older
-version, you can also specify the tag with semicolumn. + container\_name
-specifies the name of the container (since you can have several
-containers based on the same image, this name is really important and
-will used all the times to interact with the container ; choose it
-wisely)
+The two arguments are the most important ones for Selenium :
+
+  - image\_src specifies the images on which the container should be
+    built. Note that similarly to github packages, we specify the
+    docker-hub url with the repo and the image to create. If you want to
+    install an older version, you can also specify the tag with
+    semicolumn.
+  - container\_name specifies the name of the container (since you can
+    have several containers based on the same image, this name is really
+    important and will used all the times to interact with the container
+    ; choose it wisely)
 
 The function can take other arguments, which can be important if you run
 containers based on other images.
@@ -249,8 +251,6 @@ chrome %>% doc_list_file("/home/seluser/")
 
 # Initializing a rstudio-server based on dockeR
 
-# To do
-
 ## Open a tty to interact within
 
 ``` r
@@ -258,4 +258,7 @@ chrome %>%
   doc_$exec("sudo apt-get update -y && sudo apt-get upgrade -y")
 ```
 
-## Addword user and password on rstudio-server
+## Thanks
+
+A huge thank you to [Favstats](https://github.com/favstats) for
+designing each of the hex-stickers.
