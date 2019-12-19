@@ -4,8 +4,14 @@
 \alias{sudo}
 \title{sudo}
 \usage{
-sudo(command, intern = F, ignore.stdout = F, ignore.stderr = T,
-  env_var = T, cmd = F)
+sudo(
+  command,
+  intern = F,
+  ignore.stdout = F,
+  ignore.stderr = T,
+  env_var = T,
+  cmd = F
+)
 }
 \arguments{
 \item{command}{A bash command to execute as sudo}

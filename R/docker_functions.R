@@ -1,6 +1,11 @@
 #' prune_containers
 #' @export
 
+is_docker_running <- function(){length(list_container()) != 0}
+
+#' prune_containers
+#' @export
+
 prune_containers <- function() purrr::walk(existing_containers(), stop_container, remove = T)
 
 #' list_container
@@ -156,6 +161,8 @@ create_container <- function(image_src = NULL,
                              expose_port = NULL,
                              port = NULL){
 
+  if(!is_docker_running()){stop("Docker daemon is not running, please start it and try again")}
+
   if(!is.null(container_name)){
     if(container_name %in% existing_containers()){
       stop(glue("A container is already named { container_name }.\n
@@ -181,6 +188,7 @@ create_container <- function(image_src = NULL,
 #' @export
 
 load_container <- function(container_name){
+  if(!is_docker_running()){stop("Docker daemon is not running, please start it and try again")}
   chrome <- docker$new(container_name = "chrome")
 }
 
@@ -189,6 +197,8 @@ load_container <- function(container_name){
 #' @export
 
 start_container <- function(container_name){
+
+  if(!is_docker_running()){stop("Docker daemon is not running, please start it and try again")}
 
   container_name <- check_container_name(container_name)
 
@@ -216,6 +226,7 @@ start_container <- function(container_name){
 #' @export
 
 stop_container <- function(container_name, remove = F){
+  if(!is_docker_running()){stop("Docker daemon is not running, please start it and try again")}
   container_name <- check_container_name(container_name)
 
   if(!container_name %in% existing_containers()){
@@ -245,6 +256,7 @@ stop_container <- function(container_name, remove = F){
 #' @export
 
 remove_container <- function(container_name){
+  if(!is_docker_running()){stop("Docker daemon is not running, please start it and try again")}
   container_name <- check_container_name(container_name)
 
   if(!container_name %in% existing_containers()){
