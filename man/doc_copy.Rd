@@ -4,8 +4,7 @@
 \alias{doc_copy}
 \title{doc_copy}
 \usage{
-doc_copy(container, from = NULL, from_cont = NULL, to = NULL,
-  to_cont = NULL)
+doc_copy(container, from = NULL, from_cont = NULL, to = NULL, to_cont = NULL)
 }
 \description{
 doc_copy

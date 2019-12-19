@@ -4,8 +4,7 @@
 \alias{is_running}
 \title{is_running}
 \usage{
-is_running(name = NULL, image_src = NULL, quiet = T,
-  return_logical = F)
+is_running(name = NULL, image_src = NULL, quiet = T, return_logical = F)
 }
 \arguments{
 \item{name}{A string providing the name of a container, whose state should be checked}

@@ -4,8 +4,15 @@
 \alias{doc_exec}
 \title{doc_exec}
 \usage{
-doc_exec(container_name, command, intern = F, ignore.stdout = F,
-  ignore.stderr = T, cmd = F, ...)
+doc_exec(
+  container_name,
+  command,
+  intern = F,
+  ignore.stdout = F,
+  ignore.stderr = T,
+  cmd = F,
+  ...
+)
 }
 \description{
 doc_exec
