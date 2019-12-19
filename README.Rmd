@@ -17,6 +17,19 @@ knitr::opts_chunk$set(
 
 ```
 
+```{r, echo = FALSE, results='asis', eval = T}
+
+library(badger)
+
+git_repo <- "benjaminguinaudeau/dockeR"
+
+cat(
+  badge_lifecycle(),
+	badge_code_size(git_repo),
+	badge_last_commit(git_repo)
+)
+```
+
 The aim of this package is to facilitate Web Scraping with Selenium. The package proposes the following tools: 
 
 + Creating a new container with Selenium Installed

@@ -3,6 +3,10 @@
 
 # dockeR <img src="man/figures/docker_logo.jpeg" width="160px" align="right" />
 
+[![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
+[![](https://img.shields.io/github/languages/code-size/benjaminguinaudeau/dockeR.svg)](https://github.com/benjaminguinaudeau/dockeR)
+[![](https://img.shields.io/github/last-commit/benjaminguinaudeau/dockeR.svg)](https://github.com/benjaminguinaudeau/dockeR/commits/master)
+
 The aim of this package is to facilitate Web Scraping with Selenium. The
 package proposes the following tools:
 
