@@ -69,7 +69,7 @@ docker <- R6::R6Class(
           self$container_name <- container_name
 
 
-          sudo(
+          system(
             glue::glue("docker run -dt{ port} { arg } {expose_port} { name } {image_src}"),
             ignore.stdout = T)
 

@@ -8,7 +8,7 @@ doc_exec <- function(container_name,
                      cmd = F,
                      ...){
   container_name <- check_container_name(container_name)
-  out <- sudo(glue::glue("docker exec -t {container_name} {command}"),
+  out <- system(glue::glue("docker exec -t {container_name} {command}"),
               intern = intern,
               ignore.stdout = ignore.stdout,
               ignore.stderr = ignore.stderr,

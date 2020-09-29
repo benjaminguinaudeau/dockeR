@@ -18,9 +18,9 @@ prune_containers <- function() purrr::walk(existing_containers(), stop_container
 list_container <- function(image_src = NULL, not_running = T){
 
   if(not_running){
-    raw_list <- sudo("docker ps -a --no-trunc", intern = T)
+    raw_list <- system("docker ps -a --no-trunc", intern = T)
   } else {
-    raw_list <- sudo("docker ps --no-trunc", intern = T)
+    raw_list <- system("docker ps --no-trunc", intern = T)
   }
 
   if(length(raw_list) == 1){
@@ -138,7 +138,7 @@ is_running <- function(name = NULL,
 #' @export
 
 list_images <- function(){
-  sudo("docker images", intern = T) %>%
+  system("docker images", intern = T) %>%
     purrr::map(stringr::str_split, "\\s{2,}") %>%
     purrr::map(unlist) %>%
     purrr::map_dfc(tibble::as_tibble) %>%
@@ -175,7 +175,7 @@ create_container <- function(image_src = NULL,
   port <- ifelse(is.null(port), "P", glue::glue(" -p { port }"))
   arg <- ifelse(is.null(other_arguments), "", other_arguments)
 
-  sudo(glue::glue("docker run -dt{ port} { arg } {expose_port} { name } {image_src}"), ignore.stdout = T)
+  system(glue::glue("docker run -dt{ port} { arg } {expose_port} { name } {image_src}"), ignore.stdout = T)
 
   if(container_name %in% running_containers()){
     message(glue::glue("{ container_name } was successfully started"))
@@ -212,7 +212,7 @@ start_container <- function(container_name){
     }
 
     if(container_name %in% stopped_containers()){
-      sudo(glue::glue("docker start { container_name }"), ignore.stdout = T)
+      system(glue::glue("docker start { container_name }"), ignore.stdout = T)
     }
     if(is_running(name = container_name, return_logical = T)){
       message(glue::glue("{ container_name } was successfully started"))
@@ -238,14 +238,14 @@ stop_container <- function(container_name, remove = F){
   }
 
   if(container_name %in% running_containers()){
-    sudo(glue::glue("docker stop { container_name }"), ignore.stdout = T)
+    system(glue::glue("docker stop { container_name }"), ignore.stdout = T)
 
     if(container_name %in% stopped_containers()){
       message(glue::glue("{ container_name } was successfully stopped"))
     }
   }
 
-  if(remove) sudo(glue::glue("docker rm { container_name }"), ignore.stdout = T)
+  if(remove) system(glue::glue("docker rm { container_name }"), ignore.stdout = T)
   if(!container_name %in% existing_containers()){
     message(glue::glue("{ container_name } was succesfully removed"))
   }
@@ -269,7 +269,7 @@ remove_container <- function(container_name){
   }
 
   if(container_name %in% stopped_containers()){
-    sudo(glue::glue("docker rm { container_name }"), ignore.stdout = T)
+    system(glue::glue("docker rm { container_name }"), ignore.stdout = T)
 
     if(!container_name %in% existing_containers()){
       message(glue::glue("{ container_name } was successfully removed"))
@@ -354,7 +354,7 @@ doc_copy <- function(container, from = NULL, from_cont = NULL, to = NULL, to_con
   if(!is.null(to)){dest <- to}
   if(!is.null(to_cont)){dest <- paste(container, to_cont, sep = ":") %>% clean_url}
 
-  sudo(glue::glue("docker cp {src} {dest}"))
+  system(glue::glue("docker cp {src} {dest}"))
 }
 
 
