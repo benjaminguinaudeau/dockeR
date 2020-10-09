@@ -7,6 +7,12 @@ quiet <- function(x) {
   invisible(force(x))
 }
 
+#' system
+#' @export
+system <- function(..., cmd = F){
+  if(cmd) return(cmd) else return(base::system(...))
+}
+
 #' silently
 #' @export
 silently <- function(x){

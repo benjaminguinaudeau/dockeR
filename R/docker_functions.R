@@ -12,16 +12,16 @@ prune_containers <- function() purrr::walk(existing_containers(), stop_container
 #' @description This function lists all running containers. If image_src is specified, it only return containers, of which the building image matches the given string.
 #' @param image_src A String providing a specific image to filter
 #' @param not_running a logical vector specifying whether not_running containers should be returned
-#' @return a tibble listing containers with their information
+#' @return a tibble listing containers with their informationt
 #' @export
-
 list_container <- function(image_src = NULL, not_running = T){
 
-  if(not_running){
-    raw_list <- system("docker ps -a --no-trunc", intern = T)
-  } else {
-    raw_list <- system("docker ps --no-trunc", intern = T)
-  }
+    if(not_running){
+      raw_list <- system("docker ps -a --no-trunc", intern = T)
+    } else {
+      raw_list <- system("docker ps --no-trunc", intern = T)
+    }
+
 
   if(length(raw_list) == 1){
     return(
