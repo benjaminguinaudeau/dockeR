@@ -50,10 +50,8 @@ list_container <- function(image_src = NULL, not_running = T){
 
       .x %>%
         stringr::str_sub(start = border[,1], end = border[,2]) %>%
-        t %>%
-        tibble::as_tibble(.) %>%
-        purrr::set_names(col_names)}) %>%
-    janitor::clean_names(.)
+        purrr::map2_dfc(col_names, ~tibble::tibble(a = .x) %>% purrr::set_names(.y)) %>%
+        janitor::clean_names(.)
 
   if(!is.null(image_src)){
     containers <- containers %>%
@@ -315,12 +313,13 @@ get_port <- function(container_name, filter_port = NULL){
     return(
       ports %>%
         dplyr::filter(target == filter_port) %>%
-        dplyr::pull(origin)
+        dplyr::pull(origin) %>%
+        unique
     )
   }
 
   if(length(filter_port) > 1){
-    return(ports %>% dplyr::filter(target %in% filter_port))
+    return(ports %>% dplyr::filter(target %in% filter_port) %>% unique)
   }
 }
 
