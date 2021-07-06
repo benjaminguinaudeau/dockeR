@@ -16,11 +16,11 @@ prune_containers <- function() purrr::walk(existing_containers(), stop_container
 #' @export
 list_container <- function(image_src = NULL, not_running = T){
 
-    if(not_running){
-      raw_list <- system("docker ps -a --no-trunc", intern = T)
-    } else {
-      raw_list <- system("docker ps --no-trunc", intern = T)
-    }
+  if(not_running){
+    raw_list <- system("docker ps -a --no-trunc", intern = T)
+  } else {
+    raw_list <- system("docker ps --no-trunc", intern = T)
+  }
 
 
   if(length(raw_list) == 1){
@@ -53,31 +53,29 @@ list_container <- function(image_src = NULL, not_running = T){
         purrr::map2_dfc(col_names, ~tibble::tibble(a = .x) %>% purrr::set_names(.y)) %>%
         janitor::clean_names(.)
 
-  if(!is.null(image_src)){
-    containers <- containers %>%
-      dplyr::filter(image %>% stringr::str_detect(image_src))
+      if(!is.null(image_src)){
+        containers <- containers %>%
+          dplyr::filter(image %>% stringr::str_detect(image_src))
 
-    if(nrow(containers) == 0){
-      message(glue::glue("No container build from image \"{ image_src }\" has been found"))
-    }
-  }
+        if(nrow(containers) == 0){
+          message(glue::glue("No container build from image \"{ image_src }\" has been found"))
+        }
+      }
+    })
 
   return(containers)
 }
 
 #' existing_containers
 #' @export
-
-existing_containers <- function() list_container() %>% dplyr::pull(names) #%>% c(., "")
+existing_containers <- function() list_container() %>% dplyr::pull(names)
 
 #' running_containers
 #' @export
-
-running_containers <- function() list_container(not_running = F) %>% dplyr::pull(names) #%>% c(., "")
+running_containers <- function() list_container(not_running = F) %>% dplyr::pull(names)
 
 #' stopped_containers
 #' @export
-
 stopped_containers <- function() setdiff(existing_containers(), running_containers())
 
 
