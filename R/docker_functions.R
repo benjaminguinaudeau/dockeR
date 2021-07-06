@@ -52,16 +52,17 @@ list_container <- function(image_src = NULL, not_running = T){
         stringr::str_sub(start = border[,1], end = border[,2]) %>%
         purrr::map2_dfc(col_names, ~tibble::tibble(a = .x) %>% purrr::set_names(.y)) %>%
         janitor::clean_names(.)
-
-      if(!is.null(image_src)){
-        containers <- containers %>%
-          dplyr::filter(image %>% stringr::str_detect(image_src))
-
-        if(nrow(containers) == 0){
-          message(glue::glue("No container build from image \"{ image_src }\" has been found"))
-        }
-      }
     })
+
+  if(!is.null(image_src)){
+    containers <- containers %>%
+      dplyr::filter(image %>% stringr::str_detect(image_src))
+
+    if(nrow(containers) == 0){
+      message(glue::glue("No container build from image \"{ image_src }\" has been found"))
+    }
+  }
+
 
   return(containers)
 }
